@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Progress;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
 
 class CourseController extends Controller
 {
@@ -26,5 +27,46 @@ class CourseController extends Controller
             ->get()->keyBy('lesson_id');
 
         return view('courses.show', compact('course', 'progressMap'));
+    }
+
+    // Métodos CRUD para Admin/Professor
+    public function create()
+    {
+        return view('courses.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $course = Course::create($validated);
+
+        return redirect()->route('courses.show', $course)->with('success', 'Curso criado com sucesso!');
+    }
+
+    public function edit(Course $course)
+    {
+        return view('courses.edit', compact('course'));
+    }
+
+    public function update(Request $request, Course $course)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
+
+        $course->update($validated);
+
+        return redirect()->route('courses.show', $course)->with('success', 'Curso atualizado com sucesso!');
+    }
+
+    public function destroy(Course $course)
+    {
+        $course->delete();
+        return redirect()->route('courses.index')->with('success', 'Curso deletado com sucesso!');
     }
 }
