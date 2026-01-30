@@ -1,49 +1,87 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Meus Cursos') }}
-        </h2>
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+                {{ __('Meus Cursos') }}
+            </h2>
+            <a href="{{ route('courses.create') }}" 
+               class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-semibold">
+                + Novo Curso
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid md:grid-cols-3 gap-6">
-            @forelse($courses as $course)
-                @php
-                    $lessons   = $course->lessons;
-                    $total     = max(1, $lessons->count());
-                    $done      = 0;
-                    $sumPct    = 0;
-                    foreach ($lessons as $l) {
-                        $p = $progressMap[$l->id] ?? null;
-                        if ($p) {
-                            $sumPct += (int) $p->percentage;
-                            if ($p->completed) $done++;
-                        }
-                    }
-                    $avg = $total ? (int) round($sumPct / $total) : 0;
-                @endphp
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @if($courses->count() > 0)
+                <div class="grid md:grid-cols-3 gap-6">
+                    @foreach($courses as $course)
+                        @php
+                            $lessons   = $course->lessons;
+                            $total     = max(1, $lessons->count());
+                            $done      = 0;
+                            $sumPct    = 0;
+                            foreach ($lessons as $l) {
+                                $p = $progressMap[$l->id] ?? null;
+                                if ($p) {
+                                    $sumPct += (int) $p->percentage;
+                                    if ($p->completed) $done++;
+                                }
+                            }
+                            $avg = $total ? (int) round($sumPct / $total) : 0;
+                        @endphp
 
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-6">
-                    <h3 class="text-lg font-bold mb-2">{{ $course->title }}</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
-                        {{ $course->description }}
+                        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-6 hover:shadow-lg transition-shadow">
+                            <div class="flex items-start justify-between mb-3">
+                                <h3 class="text-lg font-bold flex-1">{{ $course->title }}</h3>
+                                <div class="flex gap-1">
+                                    <a href="{{ route('courses.edit', $course) }}" 
+                                       class="text-blue-600 hover:text-blue-800 text-xl" title="Editar">✏️</a>
+                                    <form method="POST" action="{{ route('courses.destroy', $course) }}" 
+                                          class="inline" onclick="return confirm('Tem certeza que deseja deletar este curso?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xl" title="Deletar">🗑️</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                                {{ $course->description ?: 'Sem descrição' }}
+                            </p>
+
+                            <div class="mb-4">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-gray-600 dark:text-gray-400">Progresso</span>
+                                    <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $avg }}%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-600">
+                                    <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: {{ $avg }}%"></div>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2">
+                                    {{ $done }}/{{ $total }} aulas concluídas
+                                </p>
+                            </div>
+
+                            <div class="flex gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <a href="{{ route('courses.show', $course) }}"
+                                   class="flex-1 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-center text-sm font-semibold">
+                                    Abrir Curso
+                                </a>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @else
+                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg p-12 text-center">
+                    <p class="text-gray-600 dark:text-gray-300 text-lg mb-6">
+                        Nenhum curso cadastrado ainda.
                     </p>
-
-                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                        <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ $avg }}%"></div>
-                    </div>
-                    <p class="text-xs text-gray-500 mb-4">
-                        {{ $avg }}% concluído ({{ $done }}/{{ $total }} aulas)
-                    </p>
-
-                    <a href="{{ route('courses.show', $course) }}"
-                       class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                        Abrir curso
+                    <a href="{{ route('courses.create') }}" 
+                       class="inline-flex px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 font-semibold">
+                        + Criar Seu Primeiro Curso
                     </a>
                 </div>
-            @empty
-                <p class="text-gray-600 dark:text-gray-300">Nenhum curso cadastrado ainda.</p>
-            @endforelse
+            @endif
         </div>
     </div>
 </x-app-layout>
