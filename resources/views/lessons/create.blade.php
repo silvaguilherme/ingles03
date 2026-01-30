@@ -19,7 +19,7 @@
                                     Título
                                 </label>
                                 <input type="text" name="title" id="title" 
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm @error('title') is-invalid @enderror"
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400 @error('title') border-red-500 @enderror"
                                        value="{{ old('title') }}" required>
                                 @error('title')
                                     <span class="text-red-600 text-sm">{{ $message }}</span>
@@ -31,7 +31,7 @@
                                     Sub-título (opcional)
                                 </label>
                                 <input type="text" name="sub_title" id="sub_title" 
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400"
                                        value="{{ old('sub_title') }}">
                             </div>
 
@@ -40,7 +40,7 @@
                                     Tipo de Conteúdo
                                 </label>
                                 <select name="content_type" id="content_type" 
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm @error('content_type') is-invalid @enderror"
+                                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black @error('content_type') border-red-500 @enderror"
                                         required>
                                     <option value="">-- Selecione --</option>
                                     <option value="video" {{ old('content_type') === 'video' ? 'selected' : '' }}>Vídeo</option>
@@ -58,7 +58,7 @@
                                     Ordem
                                 </label>
                                 <input type="number" name="order" id="order" min="1"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm @error('order') is-invalid @enderror"
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400 @error('order') border-red-500 @enderror"
                                        value="{{ old('order', $module->lessons()->count() + 1) }}" required>
                                 @error('order')
                                     <span class="text-red-600 text-sm">{{ $message }}</span>
@@ -70,7 +70,7 @@
                                     Chave do Vídeo (ex: videos/mod1/aula1.mp4)
                                 </label>
                                 <input type="text" name="video_key" id="video_key" 
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400"
                                        value="{{ old('video_key') }}">
                             </div>
 
@@ -79,7 +79,7 @@
                                     Chave do PDF (ex: pdfs/mod1/aula1.pdf)
                                 </label>
                                 <input type="text" name="pdf_key" id="pdf_key" 
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400"
                                        value="{{ old('pdf_key') }}">
                             </div>
 
@@ -88,7 +88,7 @@
                                     Duração (segundos)
                                 </label>
                                 <input type="number" name="duration_seconds" id="duration_seconds" min="0"
-                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                       class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400"
                                        value="{{ old('duration_seconds', 0) }}">
                             </div>
                         </div>
@@ -98,7 +98,7 @@
                                 Dados do Quiz (JSON, opcional)
                             </label>
                             <textarea name="quiz_data" id="quiz_data" rows="6"
-                                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                      class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400"
                                       placeholder='{"questions":[{"question":"...","options":["a","b"],"correct":0}]}'>{{ old('quiz_data') }}</textarea>
                         </div>
 
