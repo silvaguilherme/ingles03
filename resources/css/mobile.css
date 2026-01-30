@@ -1,0 +1,619 @@
+/* Mobile-First Responsive CSS */
+/* Este arquivo otimiza a experiência para dispositivos móveis */
+
+:root {
+    --touch-target-size: 44px; /* Tamanho mínimo recomendado pelo Apple HIG */
+    --spacing-xs: 0.25rem;
+    --spacing-sm: 0.5rem;
+    --spacing-md: 1rem;
+    --spacing-lg: 1.5rem;
+    --spacing-xl: 2rem;
+}
+
+/* ============================================ */
+/* BASE STYLES - Mobile First */
+/* ============================================ */
+
+* {
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight no iOS */
+    -webkit-touch-callout: none; /* Desabilita long-press menu */
+}
+
+html, body {
+    font-size: 16px; /* Previne zoom automático em inputs no iOS */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================ */
+/* BUTTONS - Touch-friendly */
+/* ============================================ */
+
+button, 
+a.btn,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+    min-height: var(--touch-target-size); /* 44px mínimo */
+    min-width: var(--touch-target-size);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+button:active,
+a.btn:active,
+[role="button"]:active {
+    transform: scale(0.98); /* Feedback visual de tap */
+    opacity: 0.9;
+}
+
+/* ============================================ */
+/* INPUTS & FORMS - Mobile Optimized */
+/* ============================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+textarea,
+select {
+    min-height: var(--touch-target-size);
+    font-size: 16px; /* Previne zoom automático */
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    width: 100%;
+    max-width: 100%;
+    -webkit-appearance: none; /* Remove estilos padrão iOS */
+    appearance: none;
+    box-sizing: border-box;
+}
+
+select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-md) center;
+    background-size: 16px 12px;
+    padding-right: 2.5rem;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Label styling */
+label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    font-size: 15px;
+}
+
+/* ============================================ */
+/* CARDS & CONTAINERS - Mobile Spacing */
+/* ============================================ */
+
+.card,
+.card-mobile {
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    background: white;
+}
+
+/* ============================================ */
+/* NAVIGATION - Mobile Optimized */
+/* ============================================ */
+
+nav {
+    padding: var(--spacing-md);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Momentum scrolling */
+}
+
+nav a,
+nav button {
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin: var(--spacing-xs);
+    white-space: nowrap;
+}
+
+/* ============================================ */
+/* MODALS & OVERLAYS */
+/* ============================================ */
+
+.modal-body {
+    padding: var(--spacing-lg);
+    max-height: 90vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================ */
+/* TEXT & TYPOGRAPHY - Mobile Readable */
+/* ============================================ */
+
+body {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+h1 { font-size: 24px; line-height: 1.2; margin-bottom: var(--spacing-md); }
+h2 { font-size: 20px; line-height: 1.3; margin-bottom: var(--spacing-md); }
+h3 { font-size: 18px; line-height: 1.4; margin-bottom: var(--spacing-sm); }
+h4 { font-size: 16px; line-height: 1.4; margin-bottom: var(--spacing-sm); }
+h5 { font-size: 14px; line-height: 1.5; }
+h6 { font-size: 13px; line-height: 1.5; }
+
+p {
+    margin-bottom: var(--spacing-md);
+}
+
+/* ============================================ */
+/* VIDEO & MEDIA - Responsive */
+/* ============================================ */
+
+video,
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+    margin-bottom: var(--spacing-lg);
+}
+
+.video-container iframe,
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ============================================ */
+/* PROGRESS BARS */
+/* ============================================ */
+
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e5e7eb;
+    overflow: hidden;
+    margin: var(--spacing-md) 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: #3b82f6;
+    transition: width 0.3s ease;
+}
+
+/* ============================================ */
+/* LISTS - Touch Friendly */
+/* ============================================ */
+
+li {
+    padding: var(--spacing-sm) 0;
+}
+
+a {
+    color: #3b82f6;
+    text-decoration: none;
+    padding: var(--spacing-xs) 0;
+}
+
+a:active {
+    opacity: 0.7;
+}
+
+/* ============================================ */
+/* GRID - Mobile First Responsive */
+/* ============================================ */
+
+.grid-mobile {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+    .grid-mobile {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .grid-mobile {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================ */
+/* SPACING - Mobile Optimization */
+/* ============================================ */
+
+@media (max-width: 640px) {
+    .px-4 { padding-left: var(--spacing-md); padding-right: var(--spacing-md); }
+    .py-6 { padding-top: var(--spacing-lg); padding-bottom: var(--spacing-lg); }
+    
+    h1 { font-size: 22px; }
+    h2 { font-size: 18px; }
+    
+    .container {
+        padding: 0 var(--spacing-md);
+    }
+}
+
+/* ============================================ */
+/* TABLET & LARGER SCREENS */
+/* ============================================ */
+
+@media (min-width: 768px) {
+    .grid-mobile {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .grid-mobile {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================ */
+/* LANDSCAPE MODE OPTIMIZATION */
+/* ============================================ */
+
+@media (orientation: landscape) and (max-height: 500px) {
+    h1 { font-size: 18px; margin-bottom: var(--spacing-sm); }
+    h2 { font-size: 16px; margin-bottom: var(--spacing-sm); }
+    
+    button {
+        padding: var(--spacing-sm) var(--spacing-md);
+        min-height: 40px;
+    }
+}
+
+/* ============================================ */
+/* ACCESSIBILITY - Touch & Vision */
+/* ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    input, textarea, select {
+        background-color: #1f2937;
+        color: white;
+        border-color: #374151;
+    }
+    
+    input:focus, textarea:focus, select:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    }
+}
+
+/* ============================================ */
+/* SAFE AREA INSET (iPhone Notch) */
+/* ============================================ */
+
+@supports (padding: max(0px)) {
+    body {
+        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    }
+    
+    .header {
+        padding-top: max(var(--spacing-lg), env(safe-area-inset-top));
+    }
+}
+
+/* ============================================ */
+/* SCROLL BEHAVIOR */
+/* ============================================ */
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Remove scroll lag em iOS */
+body {
+    -webkit-user-select: text;
+    -webkit-touch-callout: none;
+}
+
+/* ============================================ */
+/* UTILITY CLASSES FOR MOBILE */
+/* ============================================ */
+
+.hide-on-mobile {
+    display: none;
+}
+
+.show-on-mobile {
+    display: block;
+}
+
+.mobile-padding {
+    padding: var(--spacing-lg);
+}
+
+.mobile-full-width {
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .hide-on-mobile {
+        display: block;
+    }
+    
+    .show-on-mobile {
+        display: none;
+    }
+}
+
+/* ============================================ */
+/* SPECIFIC MOBILE OPTIMIZATIONS */
+/* ============================================ */
+
+/* Fix for iOS Safari vh unit issue */
+.full-height {
+    height: 100vh;
+    height: 100dvh; /* Dynamic Viewport Height */
+}
+
+/* Prevent double tap zoom on buttons */
+button, a.btn, input[type="submit"] {
+    touch-action: manipulation;
+}
+/* ============================================ */
+/* VIDEO & MEDIA OPTIMIZATIONS */
+/* ============================================ */
+
+video, 
+iframe,
+.video-container {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Preserve 16:9 aspect ratio for videos */
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+}
+
+.video-container video,
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* ============================================ */
+/* FORM OPTIMIZATIONS FOR MOBILE */
+/* ============================================ */
+
+/* Make form buttons full-width on mobile */
+form button[type="submit"],
+form input[type="submit"] {
+    width: 100%;
+    margin-bottom: var(--spacing-md);
+}
+
+@media (min-width: 640px) {
+    form button[type="submit"],
+    form input[type="submit"] {
+        width: auto;
+        margin-bottom: 0;
+    }
+}
+
+/* Better label styling for mobile */
+label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 500;
+    font-size: 14px;
+}
+
+/* ============================================ */
+/* SCROLLING OPTIMIZATION */
+/* ============================================ */
+
+/* Better scrolling on iOS */
+.scrollable-container {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+}
+
+/* ============================================ */
+/* TEXT & TYPOGRAPHY OPTIMIZATIONS */
+/* ============================================ */
+
+/* Ensure readable text on mobile */
+@media (max-width: 640px) {
+    body {
+        line-height: 1.6;
+    }
+    
+    p {
+        font-size: 16px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    h1 {
+        font-size: 24px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    h2 {
+        font-size: 20px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    h3 {
+        font-size: 18px;
+        margin-bottom: var(--spacing-sm);
+    }
+}
+
+/* ============================================ */
+/* MODAL & DIALOG OPTIMIZATION */
+/* ============================================ */
+
+dialog,
+.modal {
+    width: 100%;
+    max-width: calc(100% - 2rem);
+    margin: auto;
+    border-radius: 12px;
+    padding: var(--spacing-lg);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================ */
+/* CARD & CONTAINER SPACING */
+/* ============================================ */
+
+.card {
+    padding: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+@media (min-width: 640px) {
+    .card {
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-lg);
+    }
+}
+
+/* ============================================ */
+/* NAVIGATION & SIDEBAR OPTIMIZATION */
+/* ============================================ */
+
+/* Sticky headers on mobile */
+[role="banner"],
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Safe area for notch devices */
+@supports (padding: max(0px)) {
+    [role="banner"],
+    .sticky-header {
+        padding-top: max(var(--spacing-md), env(safe-area-inset-top));
+        padding-left: max(var(--spacing-md), env(safe-area-inset-left));
+        padding-right: max(var(--spacing-md), env(safe-area-inset-right));
+    }
+}
+
+/* ============================================ */
+/* GESTURE-FRIENDLY UI */
+/* ============================================ */
+
+/* Better spacing for touch targets in lists */
+li a, li button {
+    display: block;
+    padding: var(--spacing-md);
+    margin: var(--spacing-sm) 0;
+}
+
+/* Remove default link underline for touch */
+a {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================ */
+/* LANDSCAPE MODE OPTIMIZATION */
+/* ============================================ */
+
+@media (orientation: landscape) and (max-height: 600px) {
+    html, body {
+        font-size: 14px;
+    }
+    
+    button, input, select, textarea {
+        min-height: 36px;
+    }
+    
+    .hide-on-landscape {
+        display: none;
+    }
+}
+
+/* ============================================ */
+/* DARK MODE MOBILE OPTIMIZATIONS */
+/* ============================================ */
+
+@media (prefers-color-scheme: dark) {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    textarea,
+    select {
+        background-color: #1f2937;
+        color: white;
+        border-color: #374151;
+    }
+    
+    input:focus,
+    textarea:focus,
+    select:focus {
+        border-color: #60a5fa;
+        box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    }
+    
+    [role="banner"],
+    .sticky-header {
+        background: #1f2937;
+        color: white;
+    }
+    
+    .card {
+        background: #1f2937;
+        color: white;
+    }
+}
