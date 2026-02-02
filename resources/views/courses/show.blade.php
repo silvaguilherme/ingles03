@@ -118,7 +118,13 @@
                         <p class="mb-6 text-sm sm:text-base">Selecione uma aula ao lado para começar.</p>
                         
                         @php
-                            $allLessons = $course->lessons;
+                            // Collect all lessons from all submodules
+                            $allLessons = collect();
+                            foreach ($course->modules as $module) {
+                                foreach ($module->subModules as $subModule) {
+                                    $allLessons = $allLessons->merge($subModule->lessons);
+                                }
+                            }
                             $completedCount = $allLessons->filter(fn($l) => $progressMap[$l->id]?->completed)->count();
                             $totalCount = $allLessons->count();
                             $courseProgress = $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0;

@@ -17,7 +17,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     @foreach($courses as $course)
                         @php
-                            $lessons   = $course->lessons;
+                            // Collect all lessons from all submodules
+                            $lessons = collect();
+                            foreach ($course->modules as $module) {
+                                foreach ($module->subModules as $subModule) {
+                                    $lessons = $lessons->merge($subModule->lessons);
+                                }
+                            }
                             $total     = max(1, $lessons->count());
                             $done      = 0;
                             $sumPct    = 0;

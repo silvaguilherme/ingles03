@@ -14,9 +14,4 @@ protected $fillable = ['title','description'];
         return $this->hasMany(Module::class)->orderBy('order');
     }
 
-    public function lessons()
-    {
-        return $this->hasManyThrough(Lesson::class, Module::class);
-    }
-
 }
