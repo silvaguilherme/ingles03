@@ -20,19 +20,5 @@ class Module extends Model
     {
         return $this->hasMany(SubModule::class)->orderBy('order');
     }
-
-    /**
-     * Relacionamento: Module tem muitas Lessons (através de SubModules)
-     * Para compatibilidade com código antigo
-     */
-    public function lessons()
-    {
-        return $this->hasManyThrough(
-            Lesson::class,
-            SubModule::class,
-            'module_id',      // FK em sub_modules que aponta para modules
-            'sub_module_id'   // FK em lessons que aponta para sub_modules
-        );
-    }
 }
 

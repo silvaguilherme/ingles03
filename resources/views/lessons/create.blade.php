@@ -63,7 +63,7 @@
                                 </label>
                                 <input type="number" name="order" id="order" min="1"
                                        class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('order') border-red-500 @enderror"
-                                       value="{{ isset($lesson) ? $lesson->order : old('order', $module->lessons()->count() + 1) }}" required>
+                                       value="{{ isset($lesson) ? $lesson->order : old('order', $subModule->lessons()->count() + 1) }}" required>
                                 @error('order')
                                     <span class="text-red-600 text-xs sm:text-sm mt-1 block">{{ $message }}</span>
                                 @enderror
