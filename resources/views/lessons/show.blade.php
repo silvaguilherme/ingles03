@@ -6,10 +6,10 @@
                     {{ $lesson->title }}
                 </h2>
                 <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-                    {{ $lesson->module->course->title }} › {{ $lesson->module->title }}
+                    {{ $lesson->subModule->module->course->title }} › {{ $lesson->subModule->module->title }}
                 </p>
             </div>
-            <a href="{{ route('courses.show', $lesson->module->course) }}"
+            <a href="{{ route('courses.show', $lesson->subModule->module->course) }}"
                class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-center text-sm font-medium min-h-10">
                 ← Voltar
             </a>

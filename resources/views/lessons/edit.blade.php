@@ -107,7 +107,7 @@
                             <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                                 Atualizar
                             </button>
-                            <a href="{{ route('courses.show', $lesson->module->course) }}" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">
+                            <a href="{{ route('courses.show', $lesson->subModule->module->course) }}" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500">
                                 Cancelar
                             </a>
                         </div>

@@ -31,19 +31,11 @@ class Lesson extends Model
     }
 
     /**
-     * Compatibilidade com código antigo - acessa SubModule como module
-     */
-    public function module()
-    {
-        return $this->subModule;
-    }
-
-    /**
      * Relacionamento através do SubModule para Course
      */
     public function course()
     {
-        return $this->subModule->module->course();
+        return $this->belongsTo(Course::class, null, null)->through('subModule');
     }
 
     public function progresses()
