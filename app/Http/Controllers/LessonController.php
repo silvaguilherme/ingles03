@@ -14,8 +14,9 @@ class LessonController extends Controller
     public function show(Lesson $lesson)
     {
         // Generate storage URLs for video and PDF files
-        $videoUrl = $lesson->video_key ? asset('storage/' . $lesson->video_key) : null;
-        $pdfUrl   = $lesson->pdf_key ? asset('storage/' . $lesson->pdf_key) : null;
+        // Remove leading slash from paths if present
+        $videoUrl = $lesson->video_key ? asset('storage/' . ltrim($lesson->video_key, '/')) : null;
+        $pdfUrl   = $lesson->pdf_key ? asset('storage/' . ltrim($lesson->pdf_key, '/')) : null;
 
         $progress = Progress::firstOrCreate(
             ['user_id' => Auth::id(), 'lesson_id' => $lesson->id],
