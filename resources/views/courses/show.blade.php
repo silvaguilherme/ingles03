@@ -125,7 +125,7 @@
                                     $allLessons = $allLessons->merge($subModule->lessons);
                                 }
                             }
-                            $completedCount = $allLessons->filter(fn($l) => $progressMap[$l->id]?->completed)->count();
+                            $completedCount = $allLessons->filter(fn($l) => isset($progressMap[$l->id]) && $progressMap[$l->id]?->completed)->count();
                             $totalCount = $allLessons->count();
                             $courseProgress = $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0;
                         @endphp

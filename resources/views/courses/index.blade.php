@@ -28,7 +28,7 @@
                             $done      = 0;
                             $sumPct    = 0;
                             foreach ($lessons as $l) {
-                                $p = $progressMap[$l->id] ?? null;
+                                $p = isset($progressMap[$l->id]) ? $progressMap[$l->id] : null;
                                 if ($p) {
                                     $sumPct += (int) $p->percentage;
                                     if ($p->completed) $done++;
