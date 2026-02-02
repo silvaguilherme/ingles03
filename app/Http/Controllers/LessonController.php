@@ -6,16 +6,16 @@ use App\Models\Lesson;
 use App\Models\Module;
 use App\Models\SubModule;
 use App\Models\Progress;
-use App\Services\OciObjectStorageService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class LessonController extends Controller
 {
-    public function show(Lesson $lesson, OciObjectStorageService $oci)
+    public function show(Lesson $lesson)
     {
-        $videoUrl = $lesson->video_key ? $oci->generateTemporaryUrl($lesson->video_key, 15) : null;
-        $pdfUrl   = $lesson->pdf_key ? $oci->generateTemporaryUrl($lesson->pdf_key, 15) : null;
+        // Generate storage URLs for video and PDF files
+        $videoUrl = $lesson->video_key ? asset('storage/' . $lesson->video_key) : null;
+        $pdfUrl   = $lesson->pdf_key ? asset('storage/' . $lesson->pdf_key) : null;
 
         $progress = Progress::firstOrCreate(
             ['user_id' => Auth::id(), 'lesson_id' => $lesson->id],
