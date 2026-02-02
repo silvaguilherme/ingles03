@@ -6,17 +6,28 @@ use Illuminate\Database\Eloquent\Model;
 
 class Module extends Model
 {
-
-protected $fillable = ['course_id','title','order'];
+    protected $fillable = ['course_id', 'title', 'order'];
 
     public function course()
     {
         return $this->belongsTo(Course::class);
     }
 
-    public function lessons()
+    /**
+     * Relacionamento: Module tem muitos SubModules
+     */
+    public function subModules()
     {
-        return $this->hasMany(Lesson::class)->orderBy('order');
+        return $this->hasMany(SubModule::class)->orderBy('order');
     }
 
+    /**
+     * Relacionamento: Module tem muitas Lessons (através de SubModules)
+     * Para compatibilidade com código antigo
+     */
+    public function lessons()
+    {
+        return $this->hasManyThrough(Lesson::class, SubModule::class);
+    }
 }
+

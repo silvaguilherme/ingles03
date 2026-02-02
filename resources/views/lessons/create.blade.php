@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-lg sm:text-xl text-gray-800 dark:text-gray-200 leading-tight line-clamp-2">
-            {{ isset($lesson) ? 'Editar' : 'Nova' }} Lição: {{ $module->title }}
+            {{ isset($lesson) ? 'Editar' : 'Nova' }} Lição: {{ $subModule->title }}
         </h2>
     </x-slot>
 
@@ -10,7 +10,7 @@
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm rounded-lg">
                 <div class="p-4 sm:p-6 text-gray-900 dark:text-gray-100">
                     
-                    <form method="POST" action="{{ isset($lesson) ? route('lessons.update', $lesson) : route('lessons.store', $module) }}">
+                    <form method="POST" action="{{ isset($lesson) ? route('lessons.update', $lesson) : route('lessons.store', $subModule) }}">
                         @csrf
                         @if(isset($lesson))
                             @method('PATCH')

@@ -37,7 +37,7 @@
                         @forelse($course->modules as $module)
                             <details class="mb-3 border rounded-lg overflow-hidden" open>
                                 <summary class="cursor-pointer font-semibold text-sm text-gray-800 dark:text-gray-200 p-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-between transition">
-                                    <span class="truncate flex-1 text-xs sm:text-sm">{{ $module->title }}</span>
+                                    <span class="truncate flex-1 text-xs sm:text-sm">📚 {{ $module->title }}</span>
                                     <div class="flex gap-1 ml-2 flex-shrink-0">
                                         <a href="{{ route('modules.edit', $module) }}" class="text-xs bg-blue-500 text-white px-2 py-1 rounded min-h-8 flex items-center" onclick="event.stopPropagation()">
                                             ✏️
@@ -49,50 +49,62 @@
                                     </div>
                                 </summary>
 
-                                @php
-                                    $totalLessons = $module->lessons->count();
-                                    $completedLessons = $module->lessons->filter(fn($l) => $progressMap[$l->id]?->completed)->count();
-                                    $moduleProgress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
-                                @endphp
-                                
+                                <!-- Sub-modules dentro do Module -->
                                 <div class="p-3 border-t bg-gray-50 dark:bg-gray-750">
-                                    <div class="flex justify-between text-xs mb-1">
-                                        <span>Progresso:</span>
-                                        <span class="font-semibold">{{ $moduleProgress }}%</span>
-                                    </div>
-                                    <div class="w-full bg-gray-300 rounded-full h-2 dark:bg-gray-600">
-                                        <div class="bg-green-600 h-2 rounded-full transition-all" style="width: {{ $moduleProgress }}%"></div>
-                                    </div>
-                                </div>
-
-                                <ul class="space-y-2 p-3 border-t">
-                                    @forelse($module->lessons as $lesson)
-                                        @php $p = $progressMap[$lesson->id] ?? null; @endphp
-                                        <li class="flex items-center justify-between text-xs sm:text-sm gap-2 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition">
-                                            <a href="{{ route('lessons.show', $lesson) }}"
-                                               class="text-indigo-600 dark:text-indigo-400 hover:underline flex-1 truncate">
-                                                {{ $lesson->title }}
-                                            </a>
-                                            <div class="flex items-center gap-1 flex-shrink-0">
-                                                <span class="text-xs {{ ($p && $p->completed) ? 'text-green-600 font-semibold' : 'text-gray-500' }}">
-                                                    {{ $p->percentage ?? 0 }}%
-                                                </span>
-                                                @if($p && $p->completed)
-                                                    <span class="text-green-600 text-lg">✓</span>
-                                                @endif
-                                            </div>
-                                        </li>
-                                    @empty
-                                        <li class="text-xs text-gray-500 italic py-2">Nenhuma lição</li>
-                                    @endforelse
-
-                                    <li class="mt-2 pt-2 border-t">
-                                        <a href="{{ route('lessons.create', $module) }}" 
-                                           class="w-full block px-3 py-2 bg-green-500 text-white rounded font-medium text-xs min-h-10 flex items-center justify-center hover:bg-green-600 active:bg-green-700 transition">
-                                            ➕ Lição
+                                    <div class="mb-3">
+                                        <a href="{{ route('submodules.create', $module) }}" 
+                                           class="w-full block px-2 py-2 bg-green-500 text-white rounded font-medium text-xs min-h-9 flex items-center justify-center hover:bg-green-600 active:bg-green-700 transition">
+                                            ➕ Sub-módulo
                                         </a>
-                                    </li>
-                                </ul>
+                                    </div>
+
+                                    @forelse($module->subModules as $subModule)
+                                        <details class="mb-2 border border-gray-300 rounded overflow-hidden">
+                                            <summary class="cursor-pointer font-semibold text-xs text-gray-700 dark:text-gray-300 p-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-150 dark:hover:bg-gray-500 flex items-center justify-between transition">
+                                                <span class="truncate flex-1">📖 {{ $subModule->title }}</span>
+                                                <div class="flex gap-1 ml-2 flex-shrink-0">
+                                                    <a href="{{ route('submodules.edit', $subModule) }}" class="text-xs bg-blue-400 text-white px-1 py-0.5 rounded" onclick="event.stopPropagation()">✏️</a>
+                                                    <form method="POST" action="{{ route('submodules.destroy', $subModule) }}" class="inline" onclick="return confirm('Tem certeza?')" onsubmit="event.stopPropagation()">
+                                                        @csrf @method('DELETE')
+                                                        <button type="submit" class="text-xs bg-red-400 text-white px-1 py-0.5 rounded">🗑️</button>
+                                                    </form>
+                                                </div>
+                                            </summary>
+
+                                            <!-- Lições dentro do Sub-module -->
+                                            <ul class="space-y-1 p-2 border-t">
+                                                @forelse($subModule->lessons as $lesson)
+                                                    @php $p = $progressMap[$lesson->id] ?? null; @endphp
+                                                    <li class="flex items-center justify-between text-xs gap-2 p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+                                                        <a href="{{ route('lessons.show', $lesson) }}"
+                                                           class="text-indigo-600 dark:text-indigo-400 hover:underline flex-1 truncate">
+                                                            {{ $lesson->title }}
+                                                        </a>
+                                                        <div class="flex items-center gap-1 flex-shrink-0">
+                                                            <span class="text-xs {{ ($p && $p->completed) ? 'text-green-600 font-semibold' : 'text-gray-500' }}">
+                                                                {{ $p->percentage ?? 0 }}%
+                                                            </span>
+                                                            @if($p && $p->completed)
+                                                                <span class="text-green-600">✓</span>
+                                                            @endif
+                                                        </div>
+                                                    </li>
+                                                @empty
+                                                    <li class="text-xs text-gray-500 italic py-1">Nenhuma lição</li>
+                                                @endforelse
+
+                                                <li class="mt-1 pt-1 border-t">
+                                                    <a href="{{ route('lessons.create', $subModule) }}" 
+                                                       class="w-full block px-2 py-1 bg-indigo-500 text-white rounded font-medium text-xs min-h-8 flex items-center justify-center hover:bg-indigo-600 active:bg-indigo-700 transition">
+                                                        ➕ Lição
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </details>
+                                    @empty
+                                        <p class="text-xs text-gray-500 italic text-center py-2">Nenhum sub-módulo</p>
+                                    @endforelse
+                                </div>
                             </details>
                         @empty
                             <p class="text-gray-500 italic text-sm text-center py-6">Nenhum módulo ainda</p>

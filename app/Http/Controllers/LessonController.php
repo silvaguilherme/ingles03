@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lesson;
 use App\Models\Module;
+use App\Models\SubModule;
 use App\Models\Progress;
 use App\Services\OciObjectStorageService;
 use Illuminate\Support\Facades\Auth;
@@ -24,12 +25,16 @@ class LessonController extends Controller
         return view('lessons.show', compact('lesson','videoUrl','pdfUrl','progress'));
     }
 
-    public function create(Module $module)
+    public function create(SubModule $subModule)
     {
-        return view('lessons.create', compact('module'));
+        return view('lessons.create', [
+            'subModule' => $subModule,
+            'module' => $subModule->module,
+            'course' => $subModule->module->course,
+        ]);
     }
 
-    public function store(Request $request, Module $module)
+    public function store(Request $request, SubModule $subModule)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -42,15 +47,22 @@ class LessonController extends Controller
             'order' => 'required|integer|min:1',
         ]);
 
-        $validated['module_id'] = $module->id;
+        $validated['sub_module_id'] = $subModule->id;
         Lesson::create($validated);
 
-        return redirect()->route('courses.show', $module->course)->with('success', 'Lição criada com sucesso!');
+        return redirect()
+            ->route('courses.show', $subModule->module->course)
+            ->with('success', 'Lição criada com sucesso!');
     }
 
     public function edit(Lesson $lesson)
     {
-        return view('lessons.edit', compact('lesson'));
+        return view('lessons.edit', [
+            'lesson' => $lesson,
+            'subModule' => $lesson->subModule,
+            'module' => $lesson->subModule->module,
+            'course' => $lesson->subModule->module->course,
+        ]);
     }
 
     public function update(Request $request, Lesson $lesson)
@@ -68,14 +80,19 @@ class LessonController extends Controller
 
         $lesson->update($validated);
 
-        return redirect()->route('courses.show', $lesson->module->course)->with('success', 'Lição atualizada com sucesso!');
+        return redirect()
+            ->route('courses.show', $lesson->subModule->module->course)
+            ->with('success', 'Lição atualizada com sucesso!');
     }
 
     public function destroy(Lesson $lesson)
     {
-        $module = $lesson->module;
+        $course = $lesson->subModule->module->course;
         $lesson->delete();
 
-        return redirect()->route('courses.show', $module->course)->with('success', 'Lição deletada com sucesso!');
+        return redirect()
+            ->route('courses.show', $course)
+            ->with('success', 'Lição deletada com sucesso!');
     }
 }
+
