@@ -27,7 +27,12 @@ class Module extends Model
      */
     public function lessons()
     {
-        return $this->hasManyThrough(Lesson::class, SubModule::class);
+        return $this->hasManyThrough(
+            Lesson::class,
+            SubModule::class,
+            'module_id',      // FK em sub_modules que aponta para modules
+            'sub_module_id'   // FK em lessons que aponta para sub_modules
+        );
     }
 }
 

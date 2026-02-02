@@ -11,7 +11,7 @@ class CourseController extends Controller
 {
     public function index()
     {
-        $courses = Course::with(['modules.lessons'])->get();
+        $courses = Course::with(['modules.subModules.lessons'])->get();
         $userId = Auth::id();
         $progressMap = Progress::where('user_id', $userId)->get()->keyBy('lesson_id');
 
@@ -20,10 +20,17 @@ class CourseController extends Controller
 
     public function show(Course $course)
     {
-        $course->load(['modules.lessons']);
+        $course->load(['modules.subModules.lessons']);
         $userId = Auth::id();
+        // Get all lessons through submodules
+        $allLessons = collect();
+        foreach ($course->modules as $module) {
+            foreach ($module->subModules as $subModule) {
+                $allLessons = $allLessons->merge($subModule->lessons);
+            }
+        }
         $progressMap = Progress::where('user_id', $userId)
-            ->whereIn('lesson_id', $course->lessons->pluck('id'))
+            ->whereIn('lesson_id', $allLessons->pluck('id'))
             ->get()->keyBy('lesson_id');
 
         return view('courses.show', compact('course', 'progressMap'));
