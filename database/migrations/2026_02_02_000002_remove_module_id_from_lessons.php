@@ -11,40 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // detect and drop any foreign key constraints on lessons.module_id, then drop the column
-        if (Schema::hasColumn('lessons', 'module_id')) {
-            // Query information_schema for constraints on this column
-            $constraints = \Illuminate\Support\Facades\DB::select(
-                "SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'lessons' AND COLUMN_NAME = 'module_id' AND CONSTRAINT_NAME <> 'PRIMARY'"
-            );
-
-            foreach ($constraints as $c) {
-                try {
-                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `lessons` DROP FOREIGN KEY `{$c->CONSTRAINT_NAME}`");
-                } catch (\Exception $e) {
-                    // ignore if cannot drop; we'll attempt Schema drop as fallback
-                }
-                try {
-                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `lessons` DROP INDEX `{$c->CONSTRAINT_NAME}`");
-                } catch (\Exception $e) {
-                    // ignore if index doesn't exist or drop fails
-                }
+        // Simply drop the module_id column if it exists (no FK constraint on it)
+        Schema::table('lessons', function (Blueprint $table) {
+            if (Schema::hasColumn('lessons', 'module_id')) {
+                $table->dropColumn('module_id');
             }
-
-            Schema::table('lessons', function (Blueprint $table) {
-                try {
-                    $table->dropForeign(['module_id']);
-                } catch (\Exception $e) {
-                    // ignore
-                }
-                try {
-                    $table->dropColumn('module_id');
-                } catch (\Exception $e) {
-                    // If dropColumn still fails, rethrow so migration fails visibly
-                    throw $e;
-                }
-            });
-        }
+        });
     }
 
     /**
