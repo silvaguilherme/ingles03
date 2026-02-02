@@ -42,3 +42,18 @@ yarn-error.log*
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# ============================================
+# Arquivos de Mídia (Vídeos, PDFs grandes)
+# ============================================
+/storage/app/videos/
+/storage/app/public/videos/
+/storage/app/uploads/
+/public/videos/
+/videos/
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webm
+*.m3u8
+*.ts
