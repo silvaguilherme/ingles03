@@ -22,6 +22,9 @@ function slugify($text) {
 }
 
 
+
+// Agrupar arquivos por curso/modulo/submodulo
+$filesByGroup = [];
 $rii = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($basePath));
 foreach ($rii as $file) {
     if ($file->isDir()) continue;
@@ -34,8 +37,10 @@ foreach ($rii as $file) {
         continue;
     }
     list($curso, $modulo, $submodulo, $video) = $parts;
-    $lessonTitle = preg_replace('/\.mp4$/i', '', $video);
+    $filesByGroup[$curso][$modulo][$submodulo][] = $video;
+}
 
+foreach ($filesByGroup as $curso => $modulos) {
     // 1. Course
     $course = Course::firstOrCreate([
         'title' => $curso,
@@ -44,36 +49,45 @@ foreach ($rii as $file) {
         'order' => 1,
     ]);
 
-    // 2. Module
-    $module = Module::firstOrCreate([
-        'title' => $modulo,
-        'course_id' => $course->id,
-    ], [
-        'order' => 1,
-        'description' => $modulo,
-    ]);
+    foreach ($modulos as $modulo => $submodulos) {
+        // 2. Module
+        $module = Module::firstOrCreate([
+            'title' => $modulo,
+            'course_id' => $course->id,
+        ], [
+            'order' => 1,
+            'description' => $modulo,
+        ]);
 
-    // 3. SubModule
-    $subModule = SubModule::firstOrCreate([
-        'title' => $submodulo,
-        'module_id' => $module->id,
-    ], [
-        'order' => 1,
-        'description' => $submodulo,
-    ]);
+        foreach ($submodulos as $submodulo => $videos) {
+            // 3. SubModule
+            $subModule = SubModule::firstOrCreate([
+                'title' => $submodulo,
+                'module_id' => $module->id,
+            ], [
+                'order' => 1,
+                'description' => $submodulo,
+            ]);
 
-    // 4. Lesson
-    $lesson = Lesson::firstOrCreate([
-        'title' => $lessonTitle,
-        'sub_module_id' => $subModule->id,
-    ], [
-        'order' => 1,
-        'content_type' => 'video',
-        'video_key' => 'videos/' . $curso . '/' . $modulo . '/' . $submodulo . '/' . $video,
-        'duration_seconds' => 0,
-    ]);
-
-    echo "Importado: $curso / $modulo / $submodulo / $lessonTitle\n";
+            // Ordenar os vídeos alfabeticamente
+            sort($videos, SORT_NATURAL | SORT_FLAG_CASE);
+            $order = 1;
+            foreach ($videos as $video) {
+                $lessonTitle = preg_replace('/\.mp4$/i', '', $video);
+                $lesson = Lesson::firstOrCreate([
+                    'title' => $lessonTitle,
+                    'sub_module_id' => $subModule->id,
+                ], [
+                    'order' => $order,
+                    'content_type' => 'video',
+                    'video_key' => 'videos/' . $curso . '/' . $modulo . '/' . $submodulo . '/' . $video,
+                    'duration_seconds' => 0,
+                ]);
+                echo "Importado: $curso / $modulo / $submodulo / $lessonTitle\n";
+                $order++;
+            }
+        }
+    }
 }
 
 echo "\nImportação concluída!\n";
