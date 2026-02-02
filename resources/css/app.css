@@ -3,4 +3,4 @@
 @tailwind utilities;
 
 /* Import mobile-first responsive styles */
-@import 'mobile.css';
+/* @import 'mobile.css'; -- DISABLED FOR TESTING */
