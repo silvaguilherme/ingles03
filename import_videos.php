@@ -40,7 +40,9 @@ foreach ($rii as $file) {
     $filesByGroup[$curso][$modulo][$submodulo][] = $video;
 }
 
+
 foreach ($filesByGroup as $curso => $modulos) {
+    echo "[DEBUG] Curso: $curso\n";
     // 1. Course
     $course = Course::firstOrCreate([
         'title' => $curso,
@@ -50,6 +52,7 @@ foreach ($filesByGroup as $curso => $modulos) {
     ]);
 
     foreach ($modulos as $modulo => $submodulos) {
+        echo "  [DEBUG] Módulo: $modulo\n";
         // 2. Module
         $module = Module::firstOrCreate([
             'title' => $modulo,
@@ -60,6 +63,7 @@ foreach ($filesByGroup as $curso => $modulos) {
         ]);
 
         foreach ($submodulos as $submodulo => $videos) {
+            echo "    [DEBUG] Submódulo: $submodulo\n";
             // 3. SubModule
             $subModule = SubModule::firstOrCreate([
                 'title' => $submodulo,
@@ -71,6 +75,10 @@ foreach ($filesByGroup as $curso => $modulos) {
 
             // Ordenar os vídeos alfabeticamente
             sort($videos, SORT_NATURAL | SORT_FLAG_CASE);
+            echo "      [DEBUG] Ordem dos vídeos:".PHP_EOL;
+            foreach ($videos as $idx => $videoDebug) {
+                echo "        [".($idx+1)."] $videoDebug".PHP_EOL;
+            }
             $order = 1;
             foreach ($videos as $video) {
                 $lessonTitle = preg_replace('/\.mp4$/i', '', $video);
@@ -83,7 +91,7 @@ foreach ($filesByGroup as $curso => $modulos) {
                     'video_key' => 'videos/' . $curso . '/' . $modulo . '/' . $submodulo . '/' . $video,
                     'duration_seconds' => 0,
                 ]);
-                echo "Importado: $curso / $modulo / $submodulo / $lessonTitle\n";
+                echo "      Importado: $curso / $modulo / $submodulo / $lessonTitle (order: $order)\n";
                 $order++;
             }
         }
