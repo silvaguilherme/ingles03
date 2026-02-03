@@ -73,25 +73,37 @@ foreach ($filesByGroup as $curso => $modulos) {
                 'description' => $submodulo,
             ]);
 
-            // Ordenar os vídeos alfabeticamente
-            sort($videos, SORT_NATURAL | SORT_FLAG_CASE);
-            echo "      [DEBUG] Ordem dos vídeos:".PHP_EOL;
-            foreach ($videos as $idx => $videoDebug) {
-                echo "        [".($idx+1)."] $videoDebug".PHP_EOL;
+            // Buscar todos os arquivos suportados (mp4, pdf)
+            $allFiles = [];
+            $dirPath = $basePath . DIRECTORY_SEPARATOR . $curso . DIRECTORY_SEPARATOR . $modulo . DIRECTORY_SEPARATOR . $submodulo;
+            foreach (scandir($dirPath) as $fileName) {
+                if ($fileName === '.' || $fileName === '..') continue;
+                $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                if (in_array($ext, ['mp4', 'pdf'])) {
+                    $allFiles[] = $fileName;
+                }
+            }
+            // Ordenar alfabeticamente
+            sort($allFiles, SORT_NATURAL | SORT_FLAG_CASE);
+            echo "      [DEBUG] Ordem dos arquivos:".PHP_EOL;
+            foreach ($allFiles as $idx => $fileDebug) {
+                echo "        [".($idx+1)."] $fileDebug".PHP_EOL;
             }
             $order = 1;
-            foreach ($videos as $video) {
-                $lessonTitle = preg_replace('/\.mp4$/i', '', $video);
+            foreach ($allFiles as $fileName) {
+                $ext = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $lessonTitle = preg_replace('/\.(mp4|pdf)$/i', '', $fileName);
+                $contentType = $ext === 'pdf' ? 'pdf' : 'video';
                 $lesson = Lesson::firstOrCreate([
                     'title' => $lessonTitle,
                     'sub_module_id' => $subModule->id,
                 ], [
                     'order' => $order,
-                    'content_type' => 'video',
-                    'video_key' => 'videos/' . $curso . '/' . $modulo . '/' . $submodulo . '/' . $video,
+                    'content_type' => $contentType,
+                    'video_key' => 'videos/' . $curso . '/' . $modulo . '/' . $submodulo . '/' . $fileName,
                     'duration_seconds' => 0,
                 ]);
-                echo "      Importado: $curso / $modulo / $submodulo / $lessonTitle (order: $order)\n";
+                echo "      Importado: $curso / $modulo / $submodulo / $lessonTitle (order: $order, tipo: $contentType)\n";
                 $order++;
             }
         }
