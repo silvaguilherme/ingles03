@@ -12,7 +12,18 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Inter', 'Figtree', ...defaultTheme.fontFamily.sans],
+            },
+            colors: {
+                'alura': {
+                    'dark': '#0f1729',
+                    'darker': '#0a0e1a',
+                    'card': '#1a1f3a',
+                    'accent': '#1f90ff',
+                    'accent-hover': '#0066cc',
+                    'text': '#e0e0e0',
+                    'text-muted': '#8b92a1',
+                },
             },
         },
     },

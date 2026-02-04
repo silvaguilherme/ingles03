@@ -4,3 +4,44 @@
 
 /* Import mobile-first responsive styles */
 /* @import 'mobile.css'; -- DISABLED FOR TESTING */
+
+/* Import Alura Theme */
+@import 'alura-theme.css';
+
+/* Alura-style Dark Theme */
+@layer base {
+    html {
+        @apply scroll-smooth;
+    }
+    
+    body {
+        @apply bg-alura-dark text-alura-text;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        @apply text-alura-text;
+    }
+}
+
+/* Custom Components */
+@layer components {
+    .alura-card {
+        @apply bg-alura-card rounded-lg border border-gray-700/50 hover:border-alura-accent/30 transition-all duration-300;
+    }
+
+    .alura-btn {
+        @apply bg-alura-accent hover:bg-alura-accent-hover text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-alura-accent focus:ring-offset-2 focus:ring-offset-alura-dark;
+    }
+
+    .alura-btn-secondary {
+        @apply bg-alura-card hover:bg-gray-700 text-alura-text font-medium py-2 px-6 rounded-lg transition-all duration-200 border border-gray-600 hover:border-alura-accent/50;
+    }
+
+    .alura-input {
+        @apply bg-alura-card border border-gray-700 rounded-lg text-alura-text placeholder-alura-text-muted focus:ring-2 focus:ring-alura-accent focus:border-transparent;
+    }
+
+    .alura-gradient {
+        @apply bg-gradient-to-r from-alura-accent to-blue-500;
+    }
+}
