@@ -145,12 +145,21 @@ echo -e "${GREEN}Certificado obtido com sucesso!${NC}"
 # Configurar servidor web na porta 8088
 echo -e "${YELLOW}Configurando servidor web na porta $PORT...${NC}"
 
+# Verificar se o diretório server-configs existe
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ ! -d "$SCRIPT_DIR" ]; then
+    SCRIPT_DIR="./server-configs"
+fi
+
 if [ "$SERVER" == "apache" ]; then
     # Configuração Apache
+    echo -e "${YELLOW}Configurando Apache na porta $PORT...${NC}"
     
     # Determinar arquivo de portas
     if [ -f "$APACHE_CONF_DIR/ports.conf" ]; then
         PORTS_FILE="$APACHE_CONF_DIR/ports.conf"
+    elif [ -f "$APACHE_CONF_DIR/conf/httpd.conf" ]; then
+        PORTS_FILE="$APACHE_CONF_DIR/conf/httpd.conf"
     else
         PORTS_FILE="$APACHE_CONF_DIR/httpd.conf"
     fi
@@ -158,16 +167,18 @@ if [ "$SERVER" == "apache" ]; then
     # Adicionar Listen 8088
     if ! grep -q "Listen $PORT" $PORTS_FILE 2>/dev/null; then
         echo "Listen $PORT" >> $PORTS_FILE
+        echo -e "${GREEN}Porta $PORT adicionada em $PORTS_FILE${NC}"
     fi
     
-    # Copiar configuração
-    if [ -f "./server-configs/apache-tstjoinenglish.conf" ]; then
+    # Verificar se o arquivo de configuração existe
+    if [ -f "$SCRIPT_DIR/apache-tstjoinenglish.conf" ]; then
         CONF_FILE="$APACHE_SITES_DIR/tstjoinenglish.conf"
-        cp ./server-configs/apache-tstjoinenglish.conf $CONF_FILE
+        cp "$SCRIPT_DIR/apache-tstjoinenglish.conf" $CONF_FILE
         
         sed -i "s|/var/www/curso|$PROJECT_PATH|g" $CONF_FILE
         sed -i "s|\${APACHE_LOG_DIR}|$APACHE_LOG_DIR|g" $CONF_FILE
         
+        # Habilitar módulos se disponível
         if command -v a2enmod &> /dev/null; then
             a2enmod ssl 2>/dev/null || true
             a2enmod rewrite 2>/dev/null || true
@@ -175,12 +186,28 @@ if [ "$SERVER" == "apache" ]; then
             a2ensite tstjoinenglish.conf 2>/dev/null || true
         fi
         
-        systemctl restart $APACHE_CMD
+        # Testar configuração
+        if command -v apache2ctl &> /dev/null; then
+            apache2ctl configtest || true
+        else
+            $APACHE_CMD -t || true
+        fi
+        
+        # Reiniciar Apache
+        systemctl restart $APACHE_CMD 2>/dev/null || service $APACHE_CMD restart 2>/dev/null || true
         echo -e "${GREEN}Apache configurado na porta $PORT${NC}"
+    else
+        echo -e "${YELLOW}Arquivo de configuração não encontrado em $SCRIPT_DIR${NC}"
+        echo -e "${YELLOW}Configure manualmente o Apache para usar o certificado em:${NC}"
+        echo -e "  - Certificado: /etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+        echo -e "  - Chave: /etc/letsencrypt/live/$DOMAIN/privkey.pem"
+        echo -e "  - Porta: $PORT"
     fi
 else
     # Configuração Nginx
-    if [ -f "./server-configs/nginx-tstjoinenglish.conf" ]; then
+    echo -e "${YELLOW}Configurando Nginx na porta $PORT...${NC}"
+    
+    if [ -f "$SCRIPT_DIR/nginx-tstjoinenglish.conf" ]; then
         if [ -d "/etc/nginx/conf.d" ]; then
             CONF_FILE="/etc/nginx/conf.d/tstjoinenglish.conf"
         else
@@ -188,11 +215,18 @@ else
             ln -sf $CONF_FILE /etc/nginx/sites-enabled/
         fi
         
-        cp ./server-configs/nginx-tstjoinenglish.conf $CONF_FILE
+        cp "$SCRIPT_DIR/nginx-tstjoinenglish.conf" $CONF_FILE
         sed -i "s|/var/www/curso|$PROJECT_PATH|g" $CONF_FILE
         
-        nginx -t && systemctl restart nginx
+        nginx -t 2>/dev/null || true
+        systemctl restart nginx 2>/dev/null || service nginx restart 2>/dev/null || true
         echo -e "${GREEN}Nginx configurado na porta $PORT${NC}"
+    else
+        echo -e "${YELLOW}Arquivo de configuração não encontrado em $SCRIPT_DIR${NC}"
+        echo -e "${YELLOW}Configure manualmente o Nginx para usar o certificado em:${NC}"
+        echo -e "  - Certificado: /etc/letsencrypt/live/$DOMAIN/fullchain.pem"
+        echo -e "  - Chave: /etc/letsencrypt/live/$DOMAIN/privkey.pem"
+        echo -e "  - Porta: $PORT"
     fi
 fi
 
