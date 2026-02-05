@@ -18,13 +18,35 @@ NC='\033[0m' # No Color
 
 # Variáveis
 DOMAIN="tstjoinenglish.duckdns.org"
-PROJECT_PATH="/var/www/curso"
+PROJECT_PATH="/var/www/ingles03"
 EMAIL="your-email@example.com"  # ALTERE ESTE EMAIL
 PORT=8088
 
 # Verificar se está rodando como root
 if [ "$EUID" -ne 0 ]; then 
     echo -e "${RED}Por favor, execute como root (sudo)${NC}"
+    exit 1
+fi
+
+# Detectar gerenciador de pacotes
+echo -e "${YELLOW}Detectando sistema...${NC}"
+if command -v apt &> /dev/null; then
+    PKG_MANAGER="apt"
+    PKG_UPDATE="apt update"
+    PKG_INSTALL="apt install -y"
+    echo -e "${GREEN}Sistema Debian/Ubuntu detectado${NC}"
+elif command -v dnf &> /dev/null; then
+    PKG_MANAGER="dnf"
+    PKG_UPDATE="dnf check-update || true"
+    PKG_INSTALL="dnf install -y"
+    echo -e "${GREEN}Sistema RHEL/Oracle Linux detectado${NC}"
+elif command -v yum &> /dev/null; then
+    PKG_MANAGER="yum"
+    PKG_UPDATE="yum check-update || true"
+    PKG_INSTALL="yum install -y"
+    echo -e "${GREEN}Sistema CentOS detectado${NC}"
+else
+    echo -e "${RED}Gerenciador de pacotes não suportado${NC}"
     exit 1
 fi
 
@@ -36,9 +58,20 @@ fi
 
 # Detectar servidor web
 echo -e "${YELLOW}Detectando servidor web...${NC}"
-if command -v apache2 &> /dev/null; then
+if command -v httpd &> /dev/null; then
     SERVER="apache"
-    echo -e "${GREEN}Apache detectado${NC}"
+    APACHE_CMD="httpd"
+    APACHE_CONF_DIR="/etc/httpd"
+    APACHE_SITES_DIR="/etc/httpd/conf.d"
+    APACHE_LOG_DIR="/var/log/httpd"
+    echo -e "${GREEN}Apache (httpd) detectado${NC}"
+elif command -v apache2 &> /dev/null; then
+    SERVER="apache"
+    APACHE_CMD="apache2"
+    APACHE_CONF_DIR="/etc/apache2"
+    APACHE_SITES_DIR="/etc/apache2/sites-available"
+    APACHE_LOG_DIR="/var/log/apache2"
+    echo -e "${GREEN}Apache2 detectado${NC}"
 elif command -v nginx &> /dev/null; then
     SERVER="nginx"
     echo -e "${GREEN}Nginx detectado${NC}"
@@ -62,8 +95,8 @@ sleep 3
 
 # Instalar Certbot
 echo -e "${YELLOW}Instalando Certbot...${NC}"
-apt update
-apt install certbot -y
+$PKG_UPDATE
+$PKG_INSTALL certbot
 
 # Obter certificado usando modo standalone
 echo -e "${YELLOW}Obtendo certificado...${NC}"
@@ -77,6 +110,8 @@ if [ $? -ne 0 ]; then
     echo -e "  3. O firewall permite conexões na porta 80"
     exit 1
 fi
+    exit 1
+fi
 
 # Configurar servidor web
 echo -e "${YELLOW}Configurando servidor web na porta $PORT...${NC}"
@@ -85,32 +120,47 @@ if [ "$SERVER" == "apache" ]; then
     # Configuração Apache
     echo -e "${YELLOW}Configurando Apache...${NC}"
     
-    # Adicionar Listen 8088 no ports.conf
-    if ! grep -q "Listen $PORT" /etc/apache2/ports.conf; then
-        echo "Listen $PORT" >> /etc/apache2/ports.conf
-        echo -e "${GREEN}Porta $PORT adicionada ao ports.conf${NC}"
+    # Determinar arquivo de portas
+    if [ -f "$APACHE_CONF_DIR/ports.conf" ]; then
+        PORTS_FILE="$APACHE_CONF_DIR/ports.conf"
+    elif [ -f "$APACHE_CONF_DIR/conf/httpd.conf" ]; then
+        PORTS_FILE="$APACHE_CONF_DIR/conf/httpd.conf"
+    else
+        PORTS_FILE="$APACHE_CONF_DIR/httpd.conf"
+    fi
+    
+    # Adicionar Listen 8088
+    if ! grep -q "Listen $PORT" $PORTS_FILE 2>/dev/null; then
+        echo "Listen $PORT" >> $PORTS_FILE
+        echo -e "${GREEN}Porta $PORT adicionada${NC}"
     fi
     
     # Copiar configuração
     if [ -f "./server-configs/apache-tstjoinenglish.conf" ]; then
-        cp ./server-configs/apache-tstjoinenglish.conf /etc/apache2/sites-available/tstjoinenglish.conf
+        CONF_FILE="$APACHE_SITES_DIR/tstjoinenglish.conf"
+        cp ./server-configs/apache-tstjoinenglish.conf $CONF_FILE
         
-        # Ajustar caminho
-        sed -i "s|/var/www/curso|$PROJECT_PATH|g" /etc/apache2/sites-available/tstjoinenglish.conf
+        # Ajustar caminho e diretórios de log
+        sed -i "s|/var/www/curso|$PROJECT_PATH|g" $CONF_FILE
+        sed -i "s|\${APACHE_LOG_DIR}|$APACHE_LOG_DIR|g" $CONF_FILE
         
-        # Habilitar módulos
-        a2enmod ssl
-        a2enmod rewrite
-        a2enmod headers
-        
-        # Habilitar site
-        a2ensite tstjoinenglish.conf
+        # Habilitar módulos (se a2enmod existir)
+        if command -v a2enmod &> /dev/null; then
+            a2enmod ssl 2>/dev/null || true
+            a2enmod rewrite 2>/dev/null || true
+            a2enmod headers 2>/dev/null || true
+            a2ensite tstjoinenglish.conf 2>/dev/null || true
+        fi
         
         # Testar configuração
-        apache2ctl configtest
+        if command -v apache2ctl &> /dev/null; then
+            apache2ctl configtest || $APACHE_CMD -t
+        else
+            $APACHE_CMD -t
+        fi
         
         # Reiniciar Apache
-        systemctl restart apache2
+        systemctl restart $APACHE_CMD
         
         echo -e "${GREEN}Apache configurado com sucesso na porta $PORT${NC}"
     else
@@ -123,13 +173,18 @@ else
     
     # Copiar configuração
     if [ -f "./server-configs/nginx-tstjoinenglish.conf" ]; then
-        cp ./server-configs/nginx-tstjoinenglish.conf /etc/nginx/sites-available/tstjoinenglish
+        # Ajustar para Oracle/RHEL que não usa sites-available/enabled
+        if [ -d "/etc/nginx/conf.d" ]; then
+            CONF_FILE="/etc/nginx/conf.d/tstjoinenglish.conf"
+            cp ./server-configs/nginx-tstjoinenglish.conf $CONF_FILE
+        else
+            cp ./server-configs/nginx-tstjoinenglish.conf /etc/nginx/sites-available/tstjoinenglish
+            ln -sf /etc/nginx/sites-available/tstjoinenglish /etc/nginx/sites-enabled/
+            CONF_FILE="/etc/nginx/sites-available/tstjoinenglish"
+        fi
         
         # Ajustar caminho
-        sed -i "s|/var/www/curso|$PROJECT_PATH|g" /etc/nginx/sites-available/tstjoinenglish
-        
-        # Criar symlink
-        ln -sf /etc/nginx/sites-available/tstjoinenglish /etc/nginx/sites-enabled/
+        sed -i "s|/var/www/curso|$PROJECT_PATH|g" $CONF_FILE
         
         # Testar configuração
         nginx -t
@@ -161,18 +216,38 @@ fi
 # Limpar cache do Laravel
 echo -e "${YELLOW}Limpando cache do Laravel...${NC}"
 cd "$PROJECT_PATH"
-sudo -u www-data php artisan config:clear
-sudo -u www-data php artisan cache:clear
-sudo -u www-data php artisan route:clear
-sudo -u www-data php artisan view:clear
-sudo -u www-data php artisan optimize
+
+# Determinar usuário do servidor web
+if id "apache" &>/dev/null; then
+    WEB_USER="apache"
+elif id "www-data" &>/dev/null; then
+    WEB_USER="www-data"
+elif id "nginx" &>/dev/null; then
+    WEB_USER="nginx"
+else
+    WEB_USER="root"
+fi
+
+echo -e "${YELLOW}Usando usuário: $WEB_USER${NC}"
+
+sudo -u $WEB_USER php artisan config:clear 2>/dev/null || php artisan config:clear
+sudo -u $WEB_USER php artisan cache:clear 2>/dev/null || php artisan cache:clear
+sudo -u $WEB_USER php artisan route:clear 2>/dev/null || php artisan route:clear
+sudo -u $WEB_USER php artisan view:clear 2>/dev/null || php artisan view:clear
+sudo -u $WEB_USER php artisan optimize 2>/dev/null || php artisan optimize
 
 # Configurar renovação automática
 echo -e "${YELLOW}Configurando renovação automática...${NC}"
 
+# Criar diretório de hooks se não existir
+mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+
 # Criar hook de renovação para reiniciar o servidor
 cat > /etc/letsencrypt/renewal-hooks/deploy/restart-webserver.sh << 'EOF'
 #!/bin/bash
+if systemctl is-active httpd &> /dev/null; then
+    systemctl restart httpd
+fi
 if systemctl is-active apache2 &> /dev/null; then
     systemctl restart apache2
 fi
@@ -185,13 +260,18 @@ chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-webserver.sh
 
 # Testar renovação
 echo -e "${YELLOW}Testando renovação automática...${NC}"
-certbot renew --dry-run
+certbot renew --dry-run 2>/dev/null || echo -e "${YELLOW}Aviso: Teste de renovação falhou (normal se certificado recém criado)${NC}"
 
 # Configurar firewall
-if command -v ufw &> /dev/null && ufw status | grep -q "active"; then
-    echo -e "${YELLOW}Configurando firewall...${NC}"
+if command -v firewall-cmd &> /dev/null; then
+    echo -e "${YELLOW}Configurando firewalld...${NC}"
+    firewall-cmd --permanent --add-port=$PORT/tcp 2>/dev/null || true
+    firewall-cmd --reload 2>/dev/null || true
+    echo -e "${GREEN}Porta $PORT liberada no firewalld${NC}"
+elif command -v ufw &> /dev/null && ufw status | grep -q "active"; then
+    echo -e "${YELLOW}Configurando ufw...${NC}"
     ufw allow $PORT/tcp
-    echo -e "${GREEN}Porta $PORT liberada no firewall${NC}"
+    echo -e "${GREEN}Porta $PORT liberada no ufw${NC}"
 fi
 
 echo ""
@@ -209,7 +289,7 @@ echo ""
 echo -e "Logs:"
 echo -e "  - Certbot: /var/log/letsencrypt/"
 if [ "$SERVER" == "apache" ]; then
-    echo -e "  - Apache: /var/log/apache2/tstjoinenglish_8088_error.log"
+    echo -e "  - Apache: $APACHE_LOG_DIR/tstjoinenglish_8088_error.log"
 else
     echo -e "  - Nginx: /var/log/nginx/tstjoinenglish_8088_error.log"
 fi

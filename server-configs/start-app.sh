@@ -10,7 +10,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-PROJECT_PATH="/var/www/curso"
+PROJECT_PATH="/var/www/ingles03"
 PORT=8088
 
 echo -e "${YELLOW}Iniciando aplicação Laravel na porta $PORT...${NC}"
