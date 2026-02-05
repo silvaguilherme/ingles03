@@ -28,8 +28,8 @@
                 <aside class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-lg shadow p-3 sm:p-4 mb-4 lg:mb-0 lg:sticky lg:top-4">
                     <div class="mb-3">
                         <a href="{{ route('modules.create', $course) }}" 
-                           class="w-full block px-2 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition flex items-center justify-center gap-1">
-                            <span class="text-xs">+</span> Módulo
+                           class="inline-flex items-center justify-center w-7 h-7 border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition text-sm font-light" title="Adicionar Módulo">
+                            +
                         </a>
                     </div>
 
@@ -53,8 +53,8 @@
                                 <div class="p-3 border-t bg-gray-50 dark:bg-gray-750">
                                     <div class="mb-2">
                                         <a href="{{ route('submodules.create', $module) }}" 
-                                           class="w-full block px-2 py-1.5 border border-gray-300 dark:border-gray-500 text-gray-600 dark:text-gray-400 rounded text-xs hover:bg-gray-100 dark:hover:bg-gray-600 transition flex items-center justify-center gap-1">
-                                            <span class="text-xs">+</span> Sub-módulo
+                                           class="inline-flex items-center justify-center w-6 h-6 border border-gray-300 dark:border-gray-500 text-gray-600 dark:text-gray-400 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition text-xs font-light" title="Adicionar Sub-módulo">
+                                            +
                                         </a>
                                     </div>
 
