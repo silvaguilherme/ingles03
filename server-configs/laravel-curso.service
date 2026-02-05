@@ -1,0 +1,25 @@
+# Systemd Service para Laravel na porta 8088
+# Arquivo: /etc/systemd/system/laravel-curso.service
+
+[Unit]
+Description=Laravel Curso Application
+After=network.target mysql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/curso
+ExecStart=/usr/bin/php artisan serve --host=0.0.0.0 --port=8088
+Restart=on-failure
+RestartSec=10
+
+# Variáveis de ambiente
+Environment="APP_ENV=production"
+
+# Logs
+StandardOutput=append:/var/www/curso/storage/logs/laravel-service.log
+StandardError=append:/var/www/curso/storage/logs/laravel-service-error.log
+
+[Install]
+WantedBy=multi-user.target
