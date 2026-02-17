@@ -7,6 +7,8 @@ use App\Http\Controllers\SubModuleController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProgressController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AnkiController;
+use App\Http\Controllers\AnkiDeckController;
 
 Route::redirect('/', '/courses');
 
@@ -48,6 +50,17 @@ Route::middleware('auth')->group(function () {
 
     // Progresso
     Route::post('/progress', [ProgressController::class, 'store'])->name('progress.store');
+
+    // Anki
+    Route::get('/anki', [AnkiController::class, 'index'])->name('anki.index');
+    Route::get('/anki/{deck}/study', [AnkiController::class, 'study'])->name('anki.study');
+    Route::post('/anki/{deck}/record-answer', [AnkiController::class, 'recordAnswer'])->name('anki.record-answer');
+    Route::get('/anki/stats', [AnkiController::class, 'stats'])->name('anki.stats');
+
+    // Anki Decks
+    Route::get('/submodules/{subModule}/anki-decks/create', [AnkiDeckController::class, 'create'])->name('anki-decks.create');
+    Route::post('/submodules/{subModule}/anki-decks', [AnkiDeckController::class, 'store'])->name('anki-decks.store');
+    Route::delete('/anki-decks/{deck}', [AnkiDeckController::class, 'destroy'])->name('anki-decks.destroy');
 
     // Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
