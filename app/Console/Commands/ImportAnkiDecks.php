@@ -42,6 +42,12 @@ class ImportAnkiDecks extends Command
         $this->info('Iniciando importação de decks Anki...');
         $this->info('Procurando por arquivos APKG nas pastas dos submodulos...');
 
+        // Garantir pasta de destino
+        $ankiDecksDir = storage_path('app/anki-decks');
+        if (!is_dir($ankiDecksDir)) {
+            File::makeDirectory($ankiDecksDir, 0755, true);
+        }
+
         $importedCount = 0;
         $skippedCount = 0;
         $errorCount = 0;
@@ -136,8 +142,19 @@ class ImportAnkiDecks extends Command
             $submoduleId = null;
             $possibleSubmodule = null;
 
-            // Procurar número no caminho (ex: /01/, /02/, etc)
-            if (preg_match('/\/(\d+)(?:\/|$)/', $filePath, $matches)) {
+            // Preferir o número da pasta imediatamente antes de /anki/
+            $folderNumber = null;
+            if (preg_match('/\/([0-9]{1,3})\/anki\//', $filePath, $matches)) {
+                $folderNumber = (int)$matches[1];
+                // Tentar por order primeiro
+                $possibleSubmodule = $submodules->firstWhere('order', $folderNumber);
+                if (!$possibleSubmodule) {
+                    $possibleSubmodule = $submodules->firstWhere('id', $folderNumber);
+                }
+            }
+
+            // Fallback: procurar número no caminho (ex: /01/, /02/, etc)
+            if (!$possibleSubmodule && preg_match('/\/(\d+)(?:\/|$)/', $filePath, $matches)) {
                 $possibleNum = (int)$matches[1];
                 $possibleSubmodule = $submodules->firstWhere('id', $possibleNum);
             }
