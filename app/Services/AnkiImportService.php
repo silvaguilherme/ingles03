@@ -67,16 +67,34 @@ class AnkiImportService
             $pdo = new PDO('sqlite:' . $dbPath);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+            // Copiar arquivos de midia para o storage
+            $this->copyMediaFiles($mediaFiles, $tempDir, $mediaDir);
+
             // Consultar os notes
-            $stmt = $pdo->prepare('SELECT id, flds, tags FROM notes ORDER BY id');
+            $stmt = $pdo->prepare('SELECT id, flds, tags FROM notes');
             $stmt->execute();
             $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            $notesMap = [];
+            foreach ($notes as $note) {
+                $notesMap[$note['id']] = $note;
+            }
+
+            // Consultar os cards (para importar todos os cards do deck)
+            $cardsStmt = $pdo->prepare('SELECT id, nid, ord FROM cards ORDER BY id');
+            $cardsStmt->execute();
+            $cards = $cardsStmt->fetchAll(PDO::FETCH_ASSOC);
 
             // Limpar cards antigos do deck
             $deck->cards()->delete();
 
             $order = 0;
-            foreach ($notes as $note) {
+            foreach ($cards as $card) {
+                $note = $notesMap[$card['nid']] ?? null;
+                if (!$note) {
+                    continue;
+                }
+
                 // Dividir os campos (separados por ASCII 31)
                 $fields = explode("\x1f", $note['flds']);
 
@@ -85,7 +103,7 @@ class AnkiImportService
                     $back = $fields[1] ?? '';
                     $extra = isset($fields[2]) ? $fields[2] : null;
 
-                    // Processar conteúdo HTML/mídia
+                    // Processar conteudo HTML/midia
                     $front = $this->processCardContent($front, $mediaFiles, $deck->id);
                     $back = $this->processCardContent($back, $mediaFiles, $deck->id);
                     if ($extra) {
@@ -149,6 +167,30 @@ class AnkiImportService
         );
 
         return $content;
+    }
+
+    /**
+     * Copiar arquivos de midia do APKG para o storage
+     */
+    private function copyMediaFiles($mediaFiles, $tempDir, $mediaDir)
+    {
+        if (empty($mediaFiles)) {
+            return;
+        }
+
+        foreach ($mediaFiles as $index => $filename) {
+            if (!is_string($filename) || $filename === '') {
+                continue;
+            }
+
+            $safeName = basename($filename);
+            $source = $tempDir . DIRECTORY_SEPARATOR . $index;
+            $destination = $mediaDir . DIRECTORY_SEPARATOR . $safeName;
+
+            if (file_exists($source)) {
+                @copy($source, $destination);
+            }
+        }
     }
 
     /**

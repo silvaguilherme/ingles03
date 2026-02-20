@@ -145,11 +145,16 @@ class ImportAnkiDecks extends Command
             // Preferir o número da pasta imediatamente antes de /anki/
             $folderNumber = null;
             if (preg_match('/\/([0-9]{1,3})\/anki\//', $filePath, $matches)) {
-                $folderNumber = (int)$matches[1];
+                $folderNumberRaw = $matches[1];
+                $folderNumber = (int)$folderNumberRaw;
                 // Tentar por order primeiro
                 $possibleSubmodule = $submodules->firstWhere('order', $folderNumber);
                 if (!$possibleSubmodule) {
                     $possibleSubmodule = $submodules->firstWhere('id', $folderNumber);
+                }
+                // Tentar por titulo com zero a esquerda (ex: 01, 03)
+                if (!$possibleSubmodule) {
+                    $possibleSubmodule = $submodules->firstWhere('title', $folderNumberRaw);
                 }
             }
 
