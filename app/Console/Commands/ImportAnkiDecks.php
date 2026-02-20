@@ -50,16 +50,25 @@ class ImportAnkiDecks extends Command
         $basePaths = [
             storage_path('app/public/videos'),  // Seu padrão atual
             storage_path('app/submodules'),     // Padrão alternativo
-            base_path('storage/videos'),         // Outro padrão
+            base_path('storage/videos'),        // Outro padrão
         ];
 
         // Encontrar arquivos APKG recursivamente
         $apkgFiles = [];
         foreach ($basePaths as $basePath) {
-            if (is_dir($basePath)) {
-                $foundFiles = File::glob($basePath . '/**/*.apkg', GLOB_BRACE);
-                $apkgFiles = array_merge($apkgFiles, $foundFiles ?: []);
+            if (!is_dir($basePath)) {
+                continue;
             }
+
+            // Preferir arquivos dentro de pastas "anki"
+            $foundFiles = File::glob($basePath . '/**/anki/*.apkg', GLOB_BRACE);
+
+            // Fallback: qualquer apkg dentro da base
+            if (empty($foundFiles)) {
+                $foundFiles = File::glob($basePath . '/**/*.apkg', GLOB_BRACE);
+            }
+
+            $apkgFiles = array_merge($apkgFiles, $foundFiles ?: []);
         }
 
         if (empty($apkgFiles)) {
@@ -85,7 +94,11 @@ class ImportAnkiDecks extends Command
                 $this->error("❌ Diretório não encontrado: {$customPath}");
                 return 1;
             }
-            $apkgFiles = File::glob($customPath . '/**/*.apkg', GLOB_BRACE);
+            $customFiles = File::glob($customPath . '/**/anki/*.apkg', GLOB_BRACE);
+            if (empty($customFiles)) {
+                $customFiles = File::glob($customPath . '/**/*.apkg', GLOB_BRACE);
+            }
+            $apkgFiles = $customFiles;
         }
 
         // Agrupar APKGs por caminho
