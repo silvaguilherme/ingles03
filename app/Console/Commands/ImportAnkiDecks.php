@@ -60,15 +60,27 @@ class ImportAnkiDecks extends Command
                 continue;
             }
 
-            // Preferir arquivos dentro de pastas "anki"
-            $foundFiles = File::glob($basePath . '/**/anki/*.apkg', GLOB_BRACE);
+            // Usar busca recursiva para garantir compatibilidade com Linux/Windows
+            $foundFiles = [];
+            foreach (File::allFiles($basePath) as $file) {
+                $path = $file->getPathname();
+                if (stripos($path, DIRECTORY_SEPARATOR . 'anki' . DIRECTORY_SEPARATOR) !== false
+                    && str_ends_with(strtolower($path), '.apkg')) {
+                    $foundFiles[] = $path;
+                }
+            }
 
             // Fallback: qualquer apkg dentro da base
             if (empty($foundFiles)) {
-                $foundFiles = File::glob($basePath . '/**/*.apkg', GLOB_BRACE);
+                foreach (File::allFiles($basePath) as $file) {
+                    $path = $file->getPathname();
+                    if (str_ends_with(strtolower($path), '.apkg')) {
+                        $foundFiles[] = $path;
+                    }
+                }
             }
 
-            $apkgFiles = array_merge($apkgFiles, $foundFiles ?: []);
+            $apkgFiles = array_merge($apkgFiles, $foundFiles);
         }
 
         if (empty($apkgFiles)) {
@@ -94,9 +106,21 @@ class ImportAnkiDecks extends Command
                 $this->error("❌ Diretório não encontrado: {$customPath}");
                 return 1;
             }
-            $customFiles = File::glob($customPath . '/**/anki/*.apkg', GLOB_BRACE);
+            $customFiles = [];
+            foreach (File::allFiles($customPath) as $file) {
+                $path = $file->getPathname();
+                if (stripos($path, DIRECTORY_SEPARATOR . 'anki' . DIRECTORY_SEPARATOR) !== false
+                    && str_ends_with(strtolower($path), '.apkg')) {
+                    $customFiles[] = $path;
+                }
+            }
             if (empty($customFiles)) {
-                $customFiles = File::glob($customPath . '/**/*.apkg', GLOB_BRACE);
+                foreach (File::allFiles($customPath) as $file) {
+                    $path = $file->getPathname();
+                    if (str_ends_with(strtolower($path), '.apkg')) {
+                        $customFiles[] = $path;
+                    }
+                }
             }
             $apkgFiles = $customFiles;
         }
