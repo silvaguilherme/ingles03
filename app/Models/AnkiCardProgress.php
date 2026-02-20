@@ -61,40 +61,56 @@ class AnkiCardProgress extends Model
     }
 
     /**
-     * Atualizar progresso após responder corretamente
+     * Atualizar progresso baseado na qualidade da resposta (Algoritmo SM-2)
+     * Quality: 0 = Fail, 1 = Hard, 2 = Ok, 3 = Easy
      */
-    public function reviewCorrect()
+    public function recordReview(int $quality)
     {
+        $this->last_reviewed = now();
         $this->repetitions++;
-        $this->ease_factor = max(1.3, $this->ease_factor + (0.1 - (5 - 5) * (0.08 + (5 - 5) * 0.02)));
 
-        // Calcular novo intervalo
-        if ($this->repetitions === 1) {
+        // Algoritmo SM-2 do Anki
+        // EF' := EF + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))
+        $newEF = $this->ease_factor + (0.1 - (5 - $quality) * (0.08 + (5 - $quality) * 0.02));
+        $this->ease_factor = max(1.3, $newEF); // Mínimo de 1.3
+
+        if ($quality < 2) { // Errou ou achou difícil
+            $this->lapses++;
+            $this->repetitions = 1;
             $this->interval = 1;
-        } else if ($this->repetitions === 2) {
-            $this->interval = 3;
+            $this->status = 'learning';
+            $this->next_review = now()->addMinutes(10); // Revisar em 10 minutos
         } else {
-            $this->interval = round($this->interval * $this->ease_factor);
+            // Usuário acertou
+            if ($this->repetitions === 1) {
+                $this->interval = 1;
+            } else if ($this->repetitions === 2) {
+                $this->interval = 3;
+            } else {
+                // Formula: I(n) := I(n-1) * EF
+                $this->interval = round($this->interval * $this->ease_factor);
+            }
+
+            $this->status = 'review';
+            $this->next_review = now()->addDays($this->interval);
         }
 
-        $this->next_review = now()->addDays($this->interval);
-        $this->last_reviewed = now();
-        $this->status = 'review';
         $this->save();
     }
 
     /**
-     * Atualizar progresso após responder incorretamente
+     * Atualizar progresso após responder corretamente (legado)
+     */
+    public function reviewCorrect()
+    {
+        $this->recordReview(3); // Fácil
+    }
+
+    /**
+     * Atualizar progresso após responder incorretamente (legado)
      */
     public function reviewIncorrect()
     {
-        $this->lapses++;
-        $this->ease_factor = max(1.3, $this->ease_factor - 0.2);
-        $this->repetitions = 0;
-        $this->interval = 1;
-        $this->next_review = now()->addMinutes(10);
-        $this->last_reviewed = now();
-        $this->status = 'learning';
-        $this->save();
+        $this->recordReview(0); // Errou
     }
 }

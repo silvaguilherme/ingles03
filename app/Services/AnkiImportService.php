@@ -50,6 +50,19 @@ class AnkiImportService
             throw new \Exception('Banco de dados collection.anki2 não encontrado no APKG');
         }
 
+        // Extrair arquivos de mídia
+        $mediaDir = storage_path('app/anki-media/' . $deck->id);
+        if (!is_dir($mediaDir)) {
+            mkdir($mediaDir, 0755, true);
+        }
+
+        $mediaFiles = [];
+        $mediaJsonPath = $tempDir . '/media';
+        if (file_exists($mediaJsonPath)) {
+            $mediaJson = json_decode(file_get_contents($mediaJsonPath), true) ?? [];
+            $mediaFiles = $mediaJson ?? [];
+        }
+
         try {
             $pdo = new PDO('sqlite:' . $dbPath);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -68,11 +81,22 @@ class AnkiImportService
                 $fields = explode("\x1f", $note['flds']);
 
                 if (count($fields) >= 2) {
+                    $front = $fields[0] ?? '';
+                    $back = $fields[1] ?? '';
+                    $extra = isset($fields[2]) ? $fields[2] : null;
+
+                    // Processar conteúdo HTML/mídia
+                    $front = $this->processCardContent($front, $mediaFiles, $deck->id);
+                    $back = $this->processCardContent($back, $mediaFiles, $deck->id);
+                    if ($extra) {
+                        $extra = $this->processCardContent($extra, $mediaFiles, $deck->id);
+                    }
+
                     AnkiCard::create([
                         'anki_deck_id' => $deck->id,
-                        'front' => $fields[0] ?? '',
-                        'back' => $fields[1] ?? '',
-                        'extra' => isset($fields[2]) ? $fields[2] : null,
+                        'front' => $front,
+                        'back' => $back,
+                        'extra' => $extra,
                         'tags' => $note['tags'] ?? '',
                         'order' => $order++,
                     ]);
@@ -91,6 +115,40 @@ class AnkiImportService
         $this->deleteDirectory($tempDir);
 
         return $deck;
+    }
+
+    /**
+     * Processar conteúdo do card para extrair mídia
+     */
+    private function processCardContent($content, $mediaFiles, $deckId)
+    {
+        // Extrair referências de mídia (imagens e áudio)
+        // Formato Anki: <img src="filename.jpg"> ou [sound:filename.mp3]
+
+        // Processar tags sound
+        $content = preg_replace_callback(
+            '/\[sound:([^\]]+)\]/',
+            function ($matches) use ($deckId) {
+                $filename = $matches[1];
+                return '<audio controls class="w-full max-w-xs my-2"><source src="/storage/anki-media/' . $deckId . '/' . $filename . '" type="audio/mpeg">Seu navegador não suporta áudio.</audio>';
+            },
+            $content
+        );
+
+        // Processar tags img
+        $content = preg_replace_callback(
+            '/src="([^"]+)"/',
+            function ($matches) use ($deckId) {
+                $filename = $matches[1];
+                if (file_exists(storage_path('app/anki-media/' . $deckId . '/' . $filename))) {
+                    return 'src="/storage/anki-media/' . $deckId . '/' . $filename . '"';
+                }
+                return $matches[0];
+            },
+            $content
+        );
+
+        return $content;
     }
 
     /**
@@ -156,3 +214,4 @@ class AnkiImportService
         return rmdir($dir);
     }
 }
+

@@ -33,6 +33,14 @@ class SubModule extends Model
     }
 
     /**
+     * Relacionamento: SubModule tem muitos AnkiDecks
+     */
+    public function ankiDecks()
+    {
+        return $this->hasMany(AnkiDeck::class);
+    }
+
+    /**
      * Relacionamento através do Module para Course
      */
     public function course()

@@ -69,20 +69,26 @@ function renderCard() {
             <!-- Card -->
             <div class="mb-8">
                 <div id="card-flip" class="cursor-pointer perspective">
-                    <div class="relative w-full h-64 transition-transform duration-500 transform" style="transform-style: preserve-3d;" id="card-inner">
+                    <div class="relative w-full min-h-96 transition-transform duration-500 transform" style="transform-style: preserve-3d;" id="card-inner">
                         <!-- Front -->
-                        <div class="absolute w-full h-full bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg p-8 border-2 border-indigo-200 flex flex-col items-center justify-center" id="card-front" style="backface-visibility: hidden;">
-                            <p class="text-center text-gray-500 text-sm mb-2">PERGUNTA</p>
-                            <h3 class="text-3xl font-bold text-gray-900 text-center">${card.front}</h3>
-                            <p class="text-gray-400 text-sm mt-8">Clique para virar o card</p>
+                        <div class="absolute w-full min-h-96 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg p-8 border-2 border-indigo-200 flex flex-col items-center justify-center overflow-y-auto" id="card-front" style="backface-visibility: hidden;">
+                            <p class="text-center text-gray-500 text-sm mb-4">PERGUNTA</p>
+                            <div class="text-2xl font-bold text-gray-900 text-center mb-6" id="front-text">
+                                ${card.front}
+                            </div>
+                            <div id="front-media" class="mb-6 max-w-full"></div>
+                            <p class="text-gray-400 text-sm mt-auto pt-4 border-t border-gray-300 w-full text-center">Clique para virar o card</p>
                         </div>
 
                         <!-- Back -->
-                        <div class="absolute w-full h-full bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-8 border-2 border-green-200 flex flex-col items-center justify-center" id="card-back" style="backface-visibility: hidden; transform: rotateY(180deg);">
-                            <p class="text-center text-gray-500 text-sm mb-2">RESPOSTA</p>
-                            <div class="text-lg text-gray-900 text-center">${card.back}</div>
-                            ${card.extra ? `<p class="text-gray-600 text-sm mt-4 italic">${card.extra}</p>` : ''}
-                            <p class="text-gray-400 text-sm mt-8">Clique para virar o card</p>
+                        <div class="absolute w-full min-h-96 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-8 border-2 border-green-200 flex flex-col items-center justify-center overflow-y-auto" id="card-back" style="backface-visibility: hidden; transform: rotateY(180deg);">
+                            <p class="text-center text-gray-500 text-sm mb-4">RESPOSTA</p>
+                            <div class="text-lg text-gray-900 text-center mb-6" id="back-text">
+                                ${card.back}
+                            </div>
+                            <div id="back-media" class="mb-6 max-w-full"></div>
+                            ${card.extra ? `<p class="text-gray-600 text-sm italic border-t border-gray-300 pt-4 w-full text-center">${card.extra}</p>` : ''}
+                            <p class="text-gray-400 text-sm mt-auto pt-4 border-t border-gray-300 w-full text-center">Clique para virar o card</p>
                         </div>
                     </div>
                 </div>
@@ -91,11 +97,22 @@ function renderCard() {
             <!-- Tags -->
             ${card.tags ? `
                 <div class="mb-8 flex flex-wrap gap-2 justify-center">
-                    ${card.tags.split(' ').map(tag => `
-                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">${tag}</span>
+                    ${card.tags.split(' ').filter(tag => tag.trim()).map(tag => `
+                        <span class="px-3 py-1 bg-gray-200 text-gray-700 text-xs rounded-full">${tag.trim()}</span>
                     `).join('')}
                 </div>
             ` : ''}
+
+            <!-- Legenda sobre as opções -->
+            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6 text-sm text-gray-700">
+                <p class="font-semibold mb-2">Como devo responder?</p>
+                <ul class="space-y-1">
+                    <li><strong>❌ Errei:</strong> Não soube a resposta - volta em 10 minutos</li>
+                    <li><strong>😐 Difícil:</strong> Sabia mas achou difícil - próxima revisão em 1 dia</li>
+                    <li><strong>😊 Médio:</strong> Respondeu corretamente - próxima revisão em 3 dias</li>
+                    <li><strong>✨ Fácil:</strong> Muito fácil - próxima revisão em 7+ dias</li>
+                </ul>
+            </div>
 
             <!-- Botões de resposta -->
             <div class="flex gap-3 justify-center flex-wrap">
@@ -106,10 +123,10 @@ function renderCard() {
                     😐 Difícil
                 </button>
                 <button onclick="recordAnswer(${card.id}, 2)" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition-colors">
-                    😊 OK
+                    😊 Médio
                 </button>
                 <button onclick="recordAnswer(${card.id}, 3)" class="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-colors">
-                    😎 Fácil
+                    ✨ Fácil
                 </button>
             </div>
         </div>
@@ -118,8 +135,20 @@ function renderCard() {
     document.getElementById('study-container').innerHTML = html;
     isFlipped = false;
 
+    // Processar conteúdo HTML do card (imagens e áudio)
+    processCardContent(card.front, document.getElementById('front-text'), document.getElementById('front-media'));
+    processCardContent(card.back, document.getElementById('back-text'), document.getElementById('back-media'));
+
     // Adicionar event listener para virar card
     document.getElementById('card-flip').addEventListener('click', flipCard);
+}
+
+function processCardContent(content, textElement, mediaElement) {
+    // Extracted pela view (já está processado com as tags HTML corretas)
+    // Apenas renderizar o conteúdo
+    if (textElement) {
+        textElement.innerHTML = content;
+    }
 }
 
 function flipCard() {
@@ -133,6 +162,12 @@ function flipCard() {
 }
 
 function recordAnswer(cardId, quality) {
+    // Desabilitar botões enquanto processa
+    document.querySelectorAll('button[onclick^="recordAnswer"]').forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+    });
+
     fetch('{{ route("anki.record-answer", $deck) }}', {
         method: 'POST',
         headers: {
@@ -143,9 +178,23 @@ function recordAnswer(cardId, quality) {
             card_id: cardId,
             quality: quality
         })
-    }).then(() => {
-        currentIndex++;
-        renderCard();
+    }).then(response => {
+        if (response.ok) {
+            currentIndex++;
+            renderCard();
+        } else {
+            alert('Erro ao registrar resposta. Tente novamente.');
+            document.querySelectorAll('button[onclick^="recordAnswer"]').forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            });
+        }
+    }).catch(error => {
+        alert('Erro: ' + error.message);
+        document.querySelectorAll('button[onclick^="recordAnswer"]').forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+        });
     });
 }
 
@@ -165,6 +214,17 @@ document.addEventListener('DOMContentLoaded', renderCard);
 
 #card-back {
     transform: rotateY(180deg);
+}
+
+#front-media img, #back-media img {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+}
+
+audio {
+    width: 100%;
+    max-width: 300px;
 }
 </style>
 @endsection

@@ -114,14 +114,14 @@ class AnkiController extends Controller
     {
         $request->validate([
             'card_id' => 'required|exists:anki_cards,id',
-            'quality' => 'required|integer|min:0|max:4', // 0 = fail, 1 = hard, 2 = ok, 3 = easy, 4 = perfect
+            'quality' => 'required|integer|min:0|max:3', // 0 = fail, 1 = hard, 2 = ok, 3 = easy
         ]);
 
         $user = Auth::user();
         $card = AnkiCard::findOrFail($request->card_id);
 
         // Obter ou criar progresso
-        $progress = AnkiCardProgress::updateOrCreate(
+        $progress = AnkiCardProgress::firstOrCreate(
             [
                 'user_id' => $user->id,
                 'anki_card_id' => $card->id,
@@ -135,12 +135,8 @@ class AnkiController extends Controller
             ]
         );
 
-        // Atualizar baseado na resposta
-        if ($request->quality <= 1) { // Errou
-            $progress->reviewIncorrect();
-        } else { // Acertou
-            $progress->reviewCorrect();
-        }
+        // Registrar review com o algoritmo SM-2
+        $progress->recordReview($request->quality);
 
         return response()->json([
             'success' => true,
