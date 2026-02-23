@@ -10,6 +10,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AnkiController;
 use App\Http\Controllers\AnkiDeckController;
 use App\Http\Controllers\AnkiImportController;
+use App\Http\Controllers\AnkiDebugController;
 
 Route::redirect('/', '/courses');
 
@@ -57,6 +58,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/anki', [AnkiController::class, 'index'])->name('anki.index');
     Route::get('/anki/import', [AnkiImportController::class, 'index'])->name('anki.import-page');
     Route::post('/anki/import', [AnkiImportController::class, 'import'])->name('anki.import');
+    Route::get('/anki/debug/status', [AnkiDebugController::class, 'status'])->name('anki.status');
+    Route::post('/anki/debug/reassociate', [AnkiDebugController::class, 'reassociate'])->name('anki.reassociate');
     Route::get('/anki/{deck}/study', [AnkiController::class, 'study'])->name('anki.study');
     Route::post('/anki/{deck}/record-answer', [AnkiController::class, 'recordAnswer'])->name('anki.record-answer');
     Route::get('/anki/stats', [AnkiController::class, 'stats'])->name('anki.stats');
