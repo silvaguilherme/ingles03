@@ -89,7 +89,8 @@ class AnkiDebugApkg extends Command
                 
                 foreach ($notes as $i => $note) {
                     $this->line('');
-                    $this->line("Note #{$i+1} (ID: {$note['id']}):");
+                    $noteNum = $i + 1;
+                    $this->line("Note #{$noteNum} (ID: {$note['id']}):");
                     
                     $fields = explode("\x1f", $note['flds']);
                     $this->line("  Campos: " . count($fields));
