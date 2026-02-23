@@ -152,23 +152,36 @@ class ImportAnkiDecks extends Command
                 $folderNumberRaw = $matches[1];
                 $folderNumber = (int)$folderNumberRaw;
                 
-                $this->line("   ✓ Identificado submodulo: " . str_pad($folderNumberRaw, 2, '0', STR_PAD_LEFT));
+                $this->line("   DEBUG: Pasta {$folderNumberRaw} encontrada na regex");
                 
                 // Buscar por title com número com zeros à esquerda (ex: "01", "03", "04")
                 // Os títulos estão armazenados como "00", "01", "02", "03", etc
                 $possibleSubmodule = $submodules->firstWhere('title', str_pad($folderNumberRaw, 2, '0', STR_PAD_LEFT));
                 
+                if ($possibleSubmodule) {
+                    $this->line("   DEBUG: Encontrado por title '" . str_pad($folderNumberRaw, 2, '0', STR_PAD_LEFT) . "' → ID {$possibleSubmodule->id}");
+                }
+                
                 // Se não encontrou e o número é simples (ex: 1, 3, 4), tentar sem zeros
                 if (!$possibleSubmodule) {
                     $possibleSubmodule = $submodules->firstWhere('title', (string)$folderNumber);
+                    if ($possibleSubmodule) {
+                        $this->line("   DEBUG: Encontrado por title '{$folderNumber}' (sem zeros) → ID {$possibleSubmodule->id}");
+                    }
                 }
                 
                 // Fallback: tentar por ID ou order
                 if (!$possibleSubmodule) {
                     $possibleSubmodule = $submodules->firstWhere('id', $folderNumber);
+                    if ($possibleSubmodule) {
+                        $this->line("   DEBUG: Encontrado por ID {$folderNumber} → ID {$possibleSubmodule->id}");
+                    }
                 }
                 if (!$possibleSubmodule) {
                     $possibleSubmodule = $submodules->firstWhere('order', $folderNumber);
+                    if ($possibleSubmodule) {
+                        $this->line("   DEBUG: Encontrado por order {$folderNumber} → ID {$possibleSubmodule->id}");
+                    }
                 }
             }
 
