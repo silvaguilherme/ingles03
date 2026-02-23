@@ -63,7 +63,7 @@
                                             <summary class="cursor-pointer font-semibold text-xs text-gray-700 dark:text-gray-300 p-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-150 dark:hover:bg-gray-500 flex items-center justify-between transition">
                                                 <span class="truncate flex-1">📖 {{ $subModule->title }}</span>
                                                 <div class="flex gap-1 ml-2 flex-shrink-0">
-                                                    <a href="{{ route('anki-decks.create', $subModule) }}" class="text-xs bg-purple-500 text-white px-1 py-0.5 rounded hover:bg-purple-600" title="Anki" onclick="event.stopPropagation()">🎴</a>
+                                                    <a href="{{ route('submodules.show', $subModule) }}" class="text-xs bg-purple-500 text-white px-1 py-0.5 rounded hover:bg-purple-600" title="Ver Submodulo/Decks" onclick="event.stopPropagation()">🎴</a>
                                                     <a href="{{ route('submodules.edit', $subModule) }}" class="text-xs bg-blue-400 text-white px-1 py-0.5 rounded" onclick="event.stopPropagation()">✏️</a>
                                                     <form method="POST" action="{{ route('submodules.destroy', $subModule) }}" class="inline" onclick="return confirm('Tem certeza?')" onsubmit="event.stopPropagation()">
                                                         @csrf @method('DELETE')
