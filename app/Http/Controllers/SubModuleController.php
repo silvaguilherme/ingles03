@@ -10,6 +10,18 @@ use Illuminate\Http\Request;
 class SubModuleController extends Controller
 {
     /**
+     * Display the submodule
+     */
+    public function show(SubModule $subModule)
+    {
+        return view('submodules.show', [
+            'subModule' => $subModule,
+            'module' => $subModule->module,
+            'course' => $subModule->module->course,
+        ]);
+    }
+
+    /**
      * Show the form for creating a new submodule
      */
     public function create(Module $module)

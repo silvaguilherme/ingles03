@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     // Sub-Módulos
     Route::get('/modules/{module}/submodules/create', [SubModuleController::class, 'create'])->name('submodules.create');
     Route::post('/modules/{module}/submodules', [SubModuleController::class, 'store'])->name('submodules.store');
+    Route::get('/submodules/{subModule}', [SubModuleController::class, 'show'])->name('submodules.show');
     Route::get('/submodules/{subModule}/edit', [SubModuleController::class, 'edit'])->name('submodules.edit');
     Route::patch('/submodules/{subModule}', [SubModuleController::class, 'update'])->name('submodules.update');
     Route::delete('/submodules/{subModule}', [SubModuleController::class, 'destroy'])->name('submodules.destroy');
