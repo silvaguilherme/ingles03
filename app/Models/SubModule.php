@@ -37,7 +37,7 @@ class SubModule extends Model
      */
     public function ankiDecks()
     {
-        return $this->hasMany(AnkiDeck::class);
+        return $this->hasMany(AnkiDeck::class, 'submodule_id');
     }
 
     /**

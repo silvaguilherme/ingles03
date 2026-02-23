@@ -24,7 +24,7 @@ class AnkiDeck extends Model
      */
     public function submodule()
     {
-        return $this->belongsTo(SubModule::class);
+        return $this->belongsTo(SubModule::class, 'submodule_id');
     }
 
     /**
