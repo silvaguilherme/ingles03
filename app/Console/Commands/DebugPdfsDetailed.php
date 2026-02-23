@@ -76,7 +76,8 @@ class DebugPdfsDetailed extends Command
             if (empty($pdfFiles)) {
                 $this->warn("Nenhum PDF encontrado em {$videosPath}");
             } else {
-                $this->line("✅ {$pdfFiles|count()} PDF(s) encontrado(s):");
+                $pdfCount = count($pdfFiles);
+                $this->line("✅ {$pdfCount} PDF(s) encontrado(s):");
                 foreach (array_slice($pdfFiles, 0, 10) as $file) {
                     $relativePath = str_replace(storage_path('app/public/'), '', $file->getPathname());
                     $this->line("  - {$relativePath}");
