@@ -76,6 +76,9 @@
                         <h2 class="text-xl font-semibold text-gray-900">🎴 Decks Anki</h2>
                     </div>
                     <div class="divide-y divide-gray-200">
+                        @php
+                            $decksCount = $subModule->ankiDecks->count();
+                        @endphp
                         @forelse($subModule->ankiDecks as $deck)
                             <div class="px-6 py-4 hover:bg-gray-50 transition">
                                 <div class="flex items-start justify-between">
@@ -95,7 +98,13 @@
                             </div>
                         @empty
                             <div class="px-6 py-8 text-center text-gray-500">
-                                <p class="text-sm">Nenhum deck</p>
+                                <p class="text-sm mb-3">❌ Nenhum deck associado a este submodulo</p>
+                                <p class="text-xs text-gray-400">
+                                    SubModule ID: {{ $subModule->id }} | Título: {{ $subModule->title }} | Order: {{ $subModule->order }}
+                                </p>
+                                <a href="{{ route('anki.status') }}" class="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded text-xs">
+                                    🔧 Ir para Debug e Reasociar Decks
+                                </a>
                             </div>
                         @endforelse
 
