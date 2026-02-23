@@ -1,38 +1,34 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="min-h-screen bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white shadow">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div class="flex-1">
-                    <a href="{{ route('courses.show', $course) }}" class="text-sm text-indigo-600 hover:text-indigo-500 mb-2 inline-block">
-                        ← {{ $course->title }}
-                    </a>
-                    <h1 class="text-3xl font-bold text-gray-900">{{ $subModule->title }}</h1>
-                    @if($subModule->description)
-                        <p class="text-gray-600 mt-2">{{ $subModule->description }}</p>
-                    @endif
-                </div>
-                <div class="flex gap-2">
-                    <a href="{{ route('submodules.edit', $subModule) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                        ✏️ Editar
-                    </a>
-                    <form method="POST" action="{{ route('submodules.destroy', $subModule) }}" class="inline">
-                        @csrf @method('DELETE')
-                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" onclick="return confirm('Tem certeza que deseja deletar este submódulo?')">
-                            🗑️ Deletar
-                        </button>
-                    </form>
-                </div>
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <a href="{{ route('courses.show', $course) }}" class="text-sm text-indigo-600 hover:text-indigo-500 mb-2 inline-block">
+                    ← {{ $course->title }}
+                </a>
+                <h2 class="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ $subModule->title }}
+                </h2>
+                @if($subModule->description)
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $subModule->description }}</p>
+                @endif
+            </div>
+            <div class="flex gap-2">
+                <a href="{{ route('submodules.edit', $subModule) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    ✏️ Editar
+                </a>
+                <form method="POST" action="{{ route('submodules.destroy', $subModule) }}" class="inline">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" onclick="return confirm('Tem certeza que deseja deletar este submódulo?')">
+                        🗑️ Deletar
+                    </button>
+                </form>
             </div>
         </div>
-    </div>
+    </x-slot>
 
-    <!-- Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Lessons -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -119,9 +115,9 @@
                         <p><span class="text-gray-600">Decks:</span> <span class="font-semibold">{{ $subModule->ankiDecks()->count() }}</span></p>
                         <p><span class="text-gray-600">Cards:</span> <span class="font-semibold">{{ $subModule->ankiDecks()->with('cards')->get()->sum(fn($d) => $d->cards()->count()) }}</span></p>
                     </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

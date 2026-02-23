@@ -1,16 +1,21 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                {{ $deck->name }}
+            </h2>
+            <a href="{{ route('anki.index') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                </svg>
+                Voltar
+            </a>
+        </div>
+    </x-slot>
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-    <div class="max-w-2xl mx-auto">
-        <a href="{{ route('anki.index') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold mb-8 inline-flex items-center gap-2">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
-            </svg>
-            Voltar ao Dashboard
-        </a>
-
-        <div class="bg-white rounded-lg shadow-lg p-12 text-center">
+    <div class="py-12">
+        <div class="max-w-2xl mx-auto px-4">
+            <div class="bg-white rounded-lg shadow-lg p-12 text-center">
             <svg class="w-20 h-20 text-gray-400 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
             </svg>
@@ -31,7 +36,7 @@
                     Voltar ao Dashboard
                 </a>
             </div>
+            </div>
         </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

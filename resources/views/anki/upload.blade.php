@@ -1,14 +1,12 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+            Upload de Deck Anki
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-    <div class="max-w-2xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Upload de Deck Anki</h1>
-            <p class="text-gray-600">Faça upload de um arquivo APKG para criar um novo deck neste submodulo</p>
-        </div>
-
+    <div class="py-12">
+        <div class="max-w-2xl mx-auto px-4">
         <!-- Formulário -->
         <div class="bg-white rounded-lg shadow-lg p-8">
             <form action="{{ route('anki-decks.store', $subModule) }}" method="POST" enctype="multipart/form-data">
@@ -132,4 +130,4 @@ dropZone.addEventListener('drop', (e) => {
     }
 });
 </script>
-@endsection
+</x-app-layout>

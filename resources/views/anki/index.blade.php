@@ -1,24 +1,14 @@
-@extends('layouts.app')
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+            Meu Dashboard Anki
+        </h2>
+    </x-slot>
 
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-    <div class="max-w-7xl mx-auto">
-        <!-- Header -->
-        <div class="mb-12">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h1 class="text-4xl font-bold text-gray-900 mb-2">Meu Dashboard Anki</h1>
-                    <p class="text-gray-600">Acompanhe seu progresso de aprendizado com flashcards</p>
-                </div>
-                <div class="flex items-center gap-2">
-                    <svg class="w-12 h-12 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                    </svg>
-                </div>
-            </div>
-
+    <div class="py-12">
+        <div class="max-w-7xl mx-auto px-4">
             <!-- Estatísticas Rápidas -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
                 <div class="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
                     <div class="flex items-center justify-between">
                         <div>
@@ -133,6 +123,6 @@
                 </a>
             </div>
         @endif
+        </div>
     </div>
-</div>
-@endsection
+</x-app-layout>

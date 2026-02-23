@@ -1,32 +1,38 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-    <div class="max-w-4xl mx-auto">
-        <!-- Header -->
-        <div class="mb-8">
-            <a href="{{ route('anki.index') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold mb-4 inline-flex items-center gap-2">
+<x-app-layout>
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
+                    {{ $deck->name }}
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {{ $deck->submodule->title }}
+                </p>
+            </div>
+            <a href="{{ route('anki.index') }}" class="text-indigo-600 hover:text-indigo-800 font-semibold inline-flex items-center gap-2">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
                 </svg>
-                Voltar ao Dashboard
+                Voltar
             </a>
-            <h1 class="text-4xl font-bold text-gray-900">{{ $deck->name }}</h1>
-            <p class="text-gray-600 mt-2">{{ $deck->submodule->title }}</p>
         </div>
+    </x-slot>
 
-        <!-- Card de Estudo -->
-        <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
-            <div id="study-container">
-                <!-- Card atual será carregado aqui via JavaScript -->
-                <div class="p-12 text-center">
-                    <div class="spinner border border-indigo-200 rounded-full w-12 h-12 border-t-indigo-600 mx-auto animate-spin"></div>
-                    <p class="text-gray-600 mt-4">Carregando card...</p>
+    <div class="py-12">
+        <div class="max-w-4xl mx-auto px-4">
+            <!-- Card de Estudo -->
+            <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
+                <div id="study-container">
+                    <!-- Card atual será carregado aqui via JavaScript -->
+                    <div class="p-12 text-center">
+                        <div class="spinner border border-indigo-200 rounded-full w-12 h-12 border-t-indigo-600 mx-auto animate-spin"></div>
+                        <p class="text-gray-600 mt-4">Carregando card...</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</x-app-layout>
 
 <!-- Script para gerenciar o estudo -->
 <script>
@@ -227,4 +233,3 @@ audio {
     max-width: 300px;
 }
 </style>
-@endsection
