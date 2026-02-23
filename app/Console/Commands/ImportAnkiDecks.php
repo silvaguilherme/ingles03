@@ -147,8 +147,9 @@ class ImportAnkiDecks extends Command
             $folderNumber = null;
             
             // Extrair o número da pasta pai imediatamente antes de /anki/
-            // Busca por /NUMEROS/anki/, pegando a ÚLTIMA ocorrência
-            if (preg_match('~\/(\d{1,3})\/anki\/$~', $filePath . '/', $matches)) {
+            // Estrutura: /ingles/01-fundacao/03/anki/arquivo.apkg
+            // Deve capturar o "03" (não o "01" de "01-fundacao")
+            if (preg_match('~\/(\d{1,3})\/anki~', $filePath, $matches)) {
                 $folderNumberRaw = $matches[1];
                 $folderNumber = (int)$folderNumberRaw;
                 
