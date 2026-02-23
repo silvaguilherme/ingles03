@@ -47,10 +47,10 @@ class AnkiImportService
         $dbPath = null;
         if (file_exists($tempDir . '/collection.anki21')) {
             $dbPath = $tempDir . '/collection.anki21';
-            \Log::info("Usando collection.anki21 para: {$apkgPath}");
+            \Log::info("Usando collection.anki21 para: {$fileFullPath}");
         } elseif (file_exists($tempDir . '/collection.anki2')) {
             $dbPath = $tempDir . '/collection.anki2';
-            \Log::info("Usando collection.anki2 para: {$apkgPath}");
+            \Log::info("Usando collection.anki2 para: {$fileFullPath}");
         }
 
         if (!$dbPath) {
@@ -91,7 +91,7 @@ class AnkiImportService
             $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             if (empty($notes)) {
-                \Log::warning('APKG sem notes: ' . $apkgPath);
+                \Log::warning('APKG sem notes: ' . $fileFullPath);
             }
 
             $notesMap = [];
@@ -105,7 +105,7 @@ class AnkiImportService
             $cards = $cardsStmt->fetchAll(PDO::FETCH_ASSOC);
             
             if (empty($cards)) {
-                \Log::warning('APKG sem cards: ' . $apkgPath);
+                \Log::warning('APKG sem cards: ' . $fileFullPath);
             }
 
             // Limpar cards antigos do deck
