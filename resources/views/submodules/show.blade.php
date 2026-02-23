@@ -84,7 +84,7 @@
                                             {{ $deck->name }}
                                         </a>
                                         <p class="text-gray-600 text-sm">
-                                            {{ $deck->cards()->count() }} cards
+                                            {{ $deck->cards->count() }} cards
                                         </p>
                                     </div>
                                     <form method="POST" action="{{ route('anki-decks.destroy', $deck) }}" class="inline">
@@ -111,10 +111,9 @@
                 <div class="mt-6 bg-blue-50 rounded-lg shadow p-6 border border-blue-200">
                     <h3 class="font-semibold text-gray-900 mb-3">📊 Resumo</h3>
                     <div class="space-y-2 text-sm">
-                        <p><span class="text-gray-600">Aulas:</span> <span class="font-semibold">{{ $subModule->lessons()->count() }}</span></p>
-                        <p><span class="text-gray-600">Decks:</span> <span class="font-semibold">{{ $subModule->ankiDecks()->count() }}</span></p>
-                        <p><span class="text-gray-600">Cards:</span> <span class="font-semibold">{{ $subModule->ankiDecks()->with('cards')->get()->sum(fn($d) => $d->cards()->count()) }}</span></p>
-                    </div>
+                        <p><span class="text-gray-600">Aulas:</span> <span class="font-semibold">{{ $subModule->lessons->count() }}</span></p>
+                        <p><span class="text-gray-600">Decks:</span> <span class="font-semibold">{{ $subModule->ankiDecks->count() }}</span></p>
+                        <p><span class="text-gray-600">Cards:</span> <span class="font-semibold">{{ $subModule->ankiDecks->sum(fn($d) => $d->cards->count()) }}</span></p>
                     </div>
                 </div>
             </div>

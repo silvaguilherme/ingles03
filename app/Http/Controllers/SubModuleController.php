@@ -14,6 +14,9 @@ class SubModuleController extends Controller
      */
     public function show(SubModule $subModule)
     {
+        // Carregar relações para não ter lazy loading
+        $subModule->load(['lessons', 'ankiDecks.cards']);
+        
         return view('submodules.show', [
             'subModule' => $subModule,
             'module' => $subModule->module,
