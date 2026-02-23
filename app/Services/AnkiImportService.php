@@ -21,12 +21,12 @@ class AnkiImportService
             throw new \Exception('Arquivo APKG não encontrado: ' . $fileFullPath);
         }
 
-        // Criar ou atualizar o deck
+        // Usar file_path como chave única para permitir múltiplos decks por submodulo
         $deck = AnkiDeck::updateOrCreate(
-            ['submodule_id' => $submoduleId],
+            ['file_path' => $filePath],
             [
+                'submodule_id' => $submoduleId,
                 'name' => $deckName ?? basename($filePath, '.apkg'),
-                'file_path' => $filePath,
             ]
         );
 
