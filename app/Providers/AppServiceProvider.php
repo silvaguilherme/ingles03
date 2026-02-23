@@ -29,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
             $this->commands([
                 \App\Console\Commands\AnkiDebugApkg::class,
                 \App\Console\Commands\AnkiListCards::class,
+                \App\Console\Commands\FixAnkiCardsSchema::class,
             ]);
         }
     }
