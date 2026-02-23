@@ -11,6 +11,7 @@ use App\Http\Controllers\AnkiController;
 use App\Http\Controllers\AnkiDeckController;
 use App\Http\Controllers\AnkiImportController;
 use App\Http\Controllers\AnkiDebugController;
+use App\Http\Controllers\TestController;
 
 Route::redirect('/', '/courses');
 
@@ -53,6 +54,9 @@ Route::middleware('auth')->group(function () {
 
     // Progresso
     Route::post('/progress', [ProgressController::class, 'store'])->name('progress.store');
+
+    // Test
+    Route::get('/test', [TestController::class, 'test'])->name('test');
 
     // Anki
     Route::get('/anki', [AnkiController::class, 'index'])->name('anki.index');

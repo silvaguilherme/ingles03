@@ -1,19 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-lg sm:text-2xl text-gray-800 dark:text-gray-200 leading-tight">
-            Status dos Decks Anki
+            🔧 Status dos Decks Anki
         </h2>
     </x-slot>
 
     <div class="py-12">
         <div class="max-w-6xl mx-auto px-4">
+            <!-- BOTÃO PRINCIPAL -->
+            <div class="bg-blue-50 dark:bg-blue-900 border-2 border-blue-300 dark:border-blue-700 rounded-lg p-8 mb-8">
+                <h3 class="text-2xl font-bold text-blue-900 dark:text-blue-100 mb-4">
+                    ⚙️ Acesso Rápido
+                </h3>
+                <button onclick="reassociateDecks()" class="px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-colors text-lg">
+                    🔄 Reasociar Decks aos Submodulos
+                </button>
+                <p class="text-blue-800 dark:text-blue-200 mt-4">
+                    Clique aqui se os decks não aparecem nos submodulos. Isto vai tentar associar cada deck ao seu submodulo correto.
+                </p>
+            </div>
+
             <!-- Decks Importados -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-8">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        📚 Decks Importados ({{ count($decks) }})
+                        📚 Decks Importados: {{ count($decks) }} {{ count($decks) === 0 ? '❌' : '✅' }}
                     </h3>
                 </div>
+                
                 
                 @if($decks->isEmpty())
                     <div class="px-6 py-8 text-center text-gray-500 dark:text-gray-400">
