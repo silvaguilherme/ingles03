@@ -12,10 +12,10 @@ class AnkiDebugController extends Controller
      */
     public function status()
     {
-        $decks = AnkiDeck::all();
-        $submodules = SubModule::all();
+        $decks = AnkiDeck::get();
+        $submodules = SubModule::get();
 
-        return view('anki.debug-status-new', [
+        return response()->view('anki.debug-simple', [
             'decks' => $decks,
             'submodules' => $submodules,
         ]);
