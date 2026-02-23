@@ -143,20 +143,31 @@ class ImportAnkiDecks extends Command
             $possibleSubmodule = null;
 
             // Preferir o número da pasta imediatamente antes de /anki/
+            // Estrutura esperada: /ingles/01-fundacao/01/anki/ ou /ingles/01-fundacao/03/anki/
             $folderNumber = null;
-            if (preg_match('/\/([0-9]{1,3})\/anki\//', $filePath, $matches)) {
+            
+            // Extrair o número da pasta pai imediatamente antes de /anki/
+            // Busca por /NUMEROS/anki/, pegando a ÚLTIMA ocorrência
+            if (preg_match('~\/(\d{1,3})\/anki\/$~', $filePath . '/', $matches)) {
                 $folderNumberRaw = $matches[1];
                 $folderNumber = (int)$folderNumberRaw;
-                // Tentar por order primeiro
+                
+                $this->line("   ✓ Identificado submodulo: " . str_pad($folderNumberRaw, 2, '0', STR_PAD_LEFT));
+                
+                // Tentar por order primeiro (a maioria dos casos)
                 $possibleSubmodule = $submodules->firstWhere('order', $folderNumber);
+                
+                // Se não encontrou por order, tentar por ID
                 if (!$possibleSubmodule) {
                     $possibleSubmodule = $submodules->firstWhere('id', $folderNumber);
                 }
-                // Tentar por titulo com zero a esquerda (ex: 01, 03)
-                if (!$possibleSubmodule) {
-                    $possibleSubmodule = $submodules->firstWhere('title', $folderNumberRaw);
+                
+                // Tentar com zero a esquerda (ex: "01", "03")
+                if (!$possibleSubmodule && strlen($folderNumberRaw) === 2) {
+                    $possibleSubmodule = $submodules->firstWhere('title', '%' . $folderNumberRaw . '%');
                 }
             }
+
 
             // Fallback: procurar número no caminho (ex: /01/, /02/, etc)
             if (!$possibleSubmodule && preg_match('/\/(\d+)(?:\/|$)/', $filePath, $matches)) {
