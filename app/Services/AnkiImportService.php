@@ -67,6 +67,13 @@ class AnkiImportService
             $pdo = new PDO('sqlite:' . $dbPath);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
+            // Verificar se as tabelas existem
+            $tables = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'")->fetchAll(PDO::FETCH_COLUMN);
+            
+            if (!in_array('notes', $tables) || !in_array('cards', $tables)) {
+                throw new \Exception('Arquivo APKG inválido: tabelas necessárias não encontradas');
+            }
+
             // Copiar arquivos de midia para o storage
             $this->copyMediaFiles($mediaFiles, $tempDir, $mediaDir);
 
@@ -74,6 +81,10 @@ class AnkiImportService
             $stmt = $pdo->prepare('SELECT id, flds, tags FROM notes');
             $stmt->execute();
             $notes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (empty($notes)) {
+                \Log::warning('APKG sem notes: ' . $apkgPath);
+            }
 
             $notesMap = [];
             foreach ($notes as $note) {
@@ -84,6 +95,10 @@ class AnkiImportService
             $cardsStmt = $pdo->prepare('SELECT id, nid, ord FROM cards ORDER BY id');
             $cardsStmt->execute();
             $cards = $cardsStmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (empty($cards)) {
+                \Log::warning('APKG sem cards: ' . $apkgPath);
+            }
 
             // Limpar cards antigos do deck
             $deck->cards()->delete();
@@ -92,6 +107,7 @@ class AnkiImportService
             foreach ($cards as $card) {
                 $note = $notesMap[$card['nid']] ?? null;
                 if (!$note) {
+                    \Log::warning("Card sem note associada: card_id={$card['id']}, nid={$card['nid']}");
                     continue;
                 }
 
@@ -102,6 +118,12 @@ class AnkiImportService
                     $front = $fields[0] ?? '';
                     $back = $fields[1] ?? '';
                     $extra = isset($fields[2]) ? $fields[2] : null;
+
+                    // Verificar se os campos não estão vazios
+                    if (empty(trim(strip_tags($front))) && empty(trim(strip_tags($back)))) {
+                        \Log::warning("Card com campos vazios: card_id={$card['id']}");
+                        continue;
+                    }
 
                     // Processar conteudo HTML/midia
                     $front = $this->processCardContent($front, $mediaFiles, $deck->id);
@@ -118,6 +140,8 @@ class AnkiImportService
                         'tags' => $note['tags'] ?? '',
                         'order' => $order++,
                     ]);
+                } else {
+                    \Log::warning("Note com menos de 2 campos: note_id={$note['id']}, campos=" . count($fields));
                 }
             }
 
