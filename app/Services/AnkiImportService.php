@@ -43,11 +43,19 @@ class AnkiImportService
             throw new \Exception('Erro ao extrair arquivo APKG');
         }
 
-        // Conectar ao banco de dados SQLite
-        $dbPath = $tempDir . '/collection.anki2';
-        if (!file_exists($dbPath)) {
+        // Conectar ao banco de dados SQLite - tentar anki21 primeiro, depois anki2
+        $dbPath = null;
+        if (file_exists($tempDir . '/collection.anki21')) {
+            $dbPath = $tempDir . '/collection.anki21';
+            \Log::info("Usando collection.anki21 para: {$apkgPath}");
+        } elseif (file_exists($tempDir . '/collection.anki2')) {
+            $dbPath = $tempDir . '/collection.anki2';
+            \Log::info("Usando collection.anki2 para: {$apkgPath}");
+        }
+
+        if (!$dbPath) {
             $this->deleteDirectory($tempDir);
-            throw new \Exception('Banco de dados collection.anki2 não encontrado no APKG');
+            throw new \Exception('Banco de dados Anki não encontrado no APKG');
         }
 
         // Extrair arquivos de mídia
@@ -119,8 +127,17 @@ class AnkiImportService
                     $back = $fields[1] ?? '';
                     $extra = isset($fields[2]) ? $fields[2] : null;
 
+                    // Ignorar mensagens de erro do Anki
+                    $frontText = trim(strip_tags($front));
+                    if (stripos($frontText, 'This file requires') !== false || 
+                        stripos($frontText, 'newer version') !== false ||
+                        stripos($frontText, 'upgrade Anki') !== false) {
+                        \Log::warning("Ignorando mensagem de erro do Anki: {$frontText}");
+                        continue;
+                    }
+
                     // Verificar se os campos não estão vazios
-                    if (empty(trim(strip_tags($front))) && empty(trim(strip_tags($back)))) {
+                    if (empty($frontText) && empty(trim(strip_tags($back)))) {
                         \Log::warning("Card com campos vazios: card_id={$card['id']}");
                         continue;
                     }

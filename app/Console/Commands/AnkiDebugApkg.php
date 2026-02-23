@@ -47,13 +47,15 @@ class AnkiDebugApkg extends Command
             }
         }
 
-        // Verificar banco de dados
-        $dbPath = $tempDir . '/collection.anki2';
-        if (!file_exists($dbPath)) {
+        // Verificar banco de dados - tentar anki21 primeiro
+        $dbPath = null;
+        if (file_exists($tempDir . '/collection.anki21')) {
             $dbPath = $tempDir . '/collection.anki21';
+        } elseif (file_exists($tempDir . '/collection.anki2')) {
+            $dbPath = $tempDir . '/collection.anki2';
         }
 
-        if (!file_exists($dbPath)) {
+        if (!$dbPath) {
             $this->error('Banco de dados não encontrado!');
             $this->line('Arquivos disponíveis:');
             foreach (scandir($tempDir) as $file) {
@@ -66,7 +68,7 @@ class AnkiDebugApkg extends Command
         }
 
         $this->line('');
-        $this->info('Conectando ao banco SQLite...');
+        $this->info("Conectando ao banco SQLite: " . basename($dbPath));
 
         try {
             $pdo = new PDO('sqlite:' . $dbPath);
