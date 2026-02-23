@@ -23,5 +23,13 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('production')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        // Registrar comandos Anki
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \App\Console\Commands\AnkiDebugApkg::class,
+                \App\Console\Commands\AnkiListCards::class,
+            ]);
+        }
     }
 }
