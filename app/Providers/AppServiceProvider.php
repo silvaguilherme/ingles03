@@ -30,6 +30,7 @@ class AppServiceProvider extends ServiceProvider
                 \App\Console\Commands\AnkiDebugApkg::class,
                 \App\Console\Commands\AnkiListCards::class,
                 \App\Console\Commands\FixAnkiCardsSchema::class,
+                \App\Console\Commands\DebugPdfs::class,
             ]);
         }
     }
