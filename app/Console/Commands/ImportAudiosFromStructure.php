@@ -218,6 +218,14 @@ class ImportAudiosFromStructure extends Command
         $audioIsComplete = $audioInfo['is_complete'];
         $candidates = [];
 
+        if ($audioIsComplete) {
+            foreach ($lessons as $lesson) {
+                if (in_array($lesson['normalized'], ['audio', 'audios'], true)) {
+                    return $lesson;
+                }
+            }
+        }
+
         foreach ($lessons as $lesson) {
             $normalizedLesson = $lesson['normalized'];
             if ($normalizedLesson === '') {
