@@ -32,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
                 \App\Console\Commands\FixAnkiCardsSchema::class,
                 \App\Console\Commands\DebugPdfs::class,
                 \App\Console\Commands\DebugPdfsDetailed::class,
+                \App\Console\Commands\LinkPdfsToLessons::class,
+                \App\Console\Commands\CreatePdfAudioStructure::class,
+                \App\Console\Commands\ReorganizePdfs::class,
+                \App\Console\Commands\ImportPdfsFromStructure::class,
             ]);
         }
     }
