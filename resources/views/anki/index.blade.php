@@ -13,50 +13,50 @@
     <div class="py-12 bg-alura-dark">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Estatísticas Rápidas -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-12">
-                <div class="alura-card rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                <div class="alura-card rounded-lg shadow p-4 border-l-4 border-blue-500">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-alura-text-muted text-sm font-medium">Total de Cards</p>
-                            <p class="text-3xl font-bold text-alura-text mt-2">{{ $totalCards }}</p>
+                            <p class="text-alura-text-muted text-xs font-medium">Total de Cards</p>
+                            <p class="text-2xl font-bold text-alura-text mt-1">{{ $totalCards }}</p>
                         </div>
-                        <svg class="w-12 h-12 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-10 h-10 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
                         </svg>
                     </div>
                 </div>
 
-                <div class="alura-card rounded-lg shadow p-6 border-l-4 border-green-500">
+                <div class="alura-card rounded-lg shadow p-4 border-l-4 border-green-500">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-alura-text-muted text-sm font-medium">Cards Estudados</p>
-                            <p class="text-3xl font-bold text-alura-text mt-2">{{ $cardsStudied }}</p>
+                            <p class="text-alura-text-muted text-xs font-medium">Cards Estudados</p>
+                            <p class="text-2xl font-bold text-alura-text mt-1">{{ $cardsStudied }}</p>
                         </div>
-                        <svg class="w-12 h-12 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-10 h-10 text-green-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                         </svg>
                     </div>
                 </div>
 
-                <div class="alura-card rounded-lg shadow p-6 border-l-4 border-orange-500">
+                <div class="alura-card rounded-lg shadow p-4 border-l-4 border-orange-500">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-alura-text-muted text-sm font-medium">Prontos para Revisar</p>
-                            <p class="text-3xl font-bold text-alura-text mt-2">{{ $cardsDueReview }}</p>
+                            <p class="text-alura-text-muted text-xs font-medium">Prontos para Revisar</p>
+                            <p class="text-2xl font-bold text-alura-text mt-1">{{ $cardsDueReview }}</p>
                         </div>
-                        <svg class="w-12 h-12 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-10 h-10 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v2h8v-2zM2 15a4 4 0 018 0v2H2v-2z" clip-rule="evenodd" />
                         </svg>
                     </div>
                 </div>
 
-                <div class="alura-card rounded-lg shadow p-6 border-l-4 border-purple-500">
+                <div class="alura-card rounded-lg shadow p-4 border-l-4 border-purple-500">
                     <div class="flex items-center justify-between">
                         <div>
-                            <p class="text-alura-text-muted text-sm font-medium">Decks Ativos</p>
-                            <p class="text-3xl font-bold text-alura-text mt-2">{{ count($decksWithProgress) }}</p>
+                            <p class="text-alura-text-muted text-xs font-medium">Decks Ativos</p>
+                            <p class="text-2xl font-bold text-alura-text mt-1">{{ count($decksWithProgress) }}</p>
                         </div>
-                        <svg class="w-12 h-12 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                        <svg class="w-10 h-10 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.669 0-3.218.51-4.5 1.385A7.968 7.968 0 009 4.804z" />
                         </svg>
                     </div>
