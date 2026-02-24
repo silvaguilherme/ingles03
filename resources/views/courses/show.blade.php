@@ -39,6 +39,13 @@
                                 <summary class="cursor-pointer font-semibold text-sm text-gray-800 dark:text-gray-200 p-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-between transition">
                                     <span class="truncate flex-1 text-xs sm:text-sm">📚 {{ $module->title }}</span>
                                     <div class="flex gap-1 ml-2 flex-shrink-0">
+                                        @php $mp = $moduleProgressMap[$module->id] ?? null; @endphp
+                                        <form method="POST" action="{{ route('modules.complete', $module) }}" class="inline" onsubmit="event.stopPropagation()">
+                                            @csrf
+                                            <button type="submit" class="text-xs {{ ($mp && $mp->completed) ? 'bg-green-600' : 'bg-emerald-500' }} text-white px-2 py-1 rounded min-h-8 flex items-center">
+                                                {{ ($mp && $mp->completed) ? '✓ Finalizado' : 'Finalizar' }}
+                                            </button>
+                                        </form>
                                         <a href="{{ route('modules.edit', $module) }}" class="text-xs bg-blue-500 text-white px-2 py-1 rounded min-h-8 flex items-center" onclick="event.stopPropagation()">
                                             ✏️
                                         </a>
@@ -63,6 +70,13 @@
                                             <summary class="cursor-pointer font-semibold text-xs text-gray-700 dark:text-gray-300 p-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-150 dark:hover:bg-gray-500 flex items-center justify-between transition">
                                                 <span class="truncate flex-1">📖 {{ $subModule->title }}</span>
                                                 <div class="flex gap-1 ml-2 flex-shrink-0">
+                                                    @php $smp = $subModuleProgressMap[$subModule->id] ?? null; @endphp
+                                                    <form method="POST" action="{{ route('submodules.complete', $subModule) }}" class="inline" onsubmit="event.stopPropagation()">
+                                                        @csrf
+                                                        <button type="submit" class="text-xs {{ ($smp && $smp->completed) ? 'bg-green-500' : 'bg-emerald-400' }} text-white px-1 py-0.5 rounded">
+                                                            {{ ($smp && $smp->completed) ? '✓' : 'Finalizar' }}
+                                                        </button>
+                                                    </form>
                                                     <a href="{{ route('submodules.show', $subModule) }}" class="text-xs bg-purple-500 text-white px-1 py-0.5 rounded hover:bg-purple-600" title="Ver Submodulo/Decks" onclick="event.stopPropagation()">🎴</a>
                                                     <a href="{{ route('submodules.edit', $subModule) }}" class="text-xs bg-blue-400 text-white px-1 py-0.5 rounded" onclick="event.stopPropagation()">✏️</a>
                                                     <form method="POST" action="{{ route('submodules.destroy', $subModule) }}" class="inline" onclick="return confirm('Tem certeza?')" onsubmit="event.stopPropagation()">

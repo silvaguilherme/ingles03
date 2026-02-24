@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\Module;
 use App\Models\SubModule;
+use App\Models\SubModuleProgress;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class SubModuleController extends Controller
@@ -16,11 +18,16 @@ class SubModuleController extends Controller
     {
         // Carregar relações para não ter lazy loading
         $subModule->load(['lessons', 'ankiDecks.cards']);
+
+        $subModuleProgress = SubModuleProgress::where('user_id', Auth::id())
+            ->where('sub_module_id', $subModule->id)
+            ->first();
         
         return view('submodules.show', [
             'subModule' => $subModule,
             'module' => $subModule->module,
             'course' => $subModule->module->course,
+            'subModuleProgress' => $subModuleProgress,
         ]);
     }
 

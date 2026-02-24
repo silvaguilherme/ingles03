@@ -6,6 +6,8 @@ use App\Http\Controllers\ModuleController;
 use App\Http\Controllers\SubModuleController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProgressController;
+use App\Http\Controllers\ModuleProgressController;
+use App\Http\Controllers\SubModuleProgressController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AnkiController;
 use App\Http\Controllers\AnkiDeckController;
@@ -54,6 +56,10 @@ Route::middleware('auth')->group(function () {
 
     // Progresso
     Route::post('/progress', [ProgressController::class, 'store'])->name('progress.store');
+
+    // Finalizar modulo/submodulo
+    Route::post('/modules/{module}/complete', [ModuleProgressController::class, 'toggle'])->name('modules.complete');
+    Route::post('/submodules/{subModule}/complete', [SubModuleProgressController::class, 'toggle'])->name('submodules.complete');
 
     // Test
     Route::get('/test', [TestController::class, 'test'])->name('test');

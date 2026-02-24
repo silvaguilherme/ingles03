@@ -13,6 +13,12 @@
                 @endif
             </div>
             <div class="flex gap-2">
+                <form method="POST" action="{{ route('submodules.complete', $subModule) }}" class="inline">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 {{ ($subModuleProgress && $subModuleProgress->completed) ? 'bg-green-600' : 'bg-emerald-500' }} text-white rounded-lg hover:opacity-90">
+                        {{ ($subModuleProgress && $subModuleProgress->completed) ? '✓ Finalizado' : 'Finalizar' }}
+                    </button>
+                </form>
                 <a href="{{ route('submodules.edit', $subModule) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                     ✏️ Editar
                 </a>

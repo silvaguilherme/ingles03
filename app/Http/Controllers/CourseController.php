@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Progress;
+use App\Models\ModuleProgress;
+use App\Models\SubModuleProgress;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
@@ -32,8 +34,18 @@ class CourseController extends Controller
         $progressMap = Progress::where('user_id', $userId)
             ->whereIn('lesson_id', $allLessons->pluck('id'))
             ->get()->keyBy('lesson_id');
+        $moduleIds = $course->modules->pluck('id');
+        $subModuleIds = $course->modules->flatMap(fn($m) => $m->subModules->pluck('id'));
 
-        return view('courses.show', compact('course', 'progressMap'));
+        $moduleProgressMap = ModuleProgress::where('user_id', $userId)
+            ->whereIn('module_id', $moduleIds)
+            ->get()->keyBy('module_id');
+
+        $subModuleProgressMap = SubModuleProgress::where('user_id', $userId)
+            ->whereIn('sub_module_id', $subModuleIds)
+            ->get()->keyBy('sub_module_id');
+
+        return view('courses.show', compact('course', 'progressMap', 'moduleProgressMap', 'subModuleProgressMap'));
     }
 
     // Métodos CRUD para Admin/Professor

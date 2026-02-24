@@ -77,7 +77,12 @@
                                 </a>
                             @endif
                             
-                            @if($lesson->content_type === 'video' && $videoUrl)
+                            @if($lesson->content_type !== 'video')
+                                <button id="markDone"
+                                        class="w-full px-4 py-3 bg-green-600 text-white rounded font-medium text-sm min-h-10 flex items-center justify-center hover:bg-green-700 active:bg-green-800 transition">
+                                    {{ $progress->completed ? '✅ Concluído' : '✓ Marcar como Concluído' }}
+                                </button>
+                            @elseif($videoUrl)
                                 <button id="markDone"
                                         class="w-full px-4 py-3 bg-green-600 text-white rounded font-medium text-sm min-h-10 flex items-center justify-center hover:bg-green-700 active:bg-green-800 transition">
                                     {{ $progress->completed ? '✅ Concluído' : '✓ Marcar como Concluído' }}
@@ -133,11 +138,13 @@
                                 @foreach($lesson->audio_list as $audioItem)
                                     @php
                                         $audioItemUrl = asset('storage/' . ltrim($audioItem, '/'));
-                                        $audioLabel = basename($audioItem);
+                                        $audioLabel = pathinfo($audioItem, PATHINFO_FILENAME);
+                                        $audioLabel = preg_replace('/\b(audio|audio completo|completo|complete)\b/i', '', $audioLabel);
+                                        $audioLabel = trim(preg_replace('/\s+/', ' ', $audioLabel));
                                     @endphp
                                     <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-700">
                                         <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">{{ $audioLabel }}</p>
-                                        <audio controls class="w-full">
+                                        <audio controls class="w-full lesson-audio">
                                             <source src="{{ $audioItemUrl }}" type="audio/mpeg"/>
                                             Seu navegador não suporta áudio HTML5.
                                         </audio>
@@ -146,7 +153,7 @@
                             </div>
                         @elseif($audioUrl)
                             <div class="mb-4 sm:mb-6 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-700">
-                                <audio controls class="w-full">
+                                <audio controls class="w-full lesson-audio">
                                     <source src="{{ $audioUrl }}" type="audio/mpeg"/>
                                     Seu navegador não suporta áudio HTML5.
                                 </audio>
@@ -162,7 +169,12 @@
                     @case('pdf')
                         @if($pdfUrl)
                             <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
-                                <iframe src="{{ $pdfUrl }}" class="w-full" style="height: 500px; min-height: 60vh;"></iframe>
+                                <div id="pdf-scroll" class="overflow-y-auto" style="height: 70vh;">
+                                    <div id="pdf-viewer" data-pdf-url="{{ $pdfUrl }}" class="p-4 space-y-4"></div>
+                                </div>
+                                <noscript>
+                                    <iframe src="{{ $pdfUrl }}" class="w-full" style="height: 500px; min-height: 60vh;"></iframe>
+                                </noscript>
                             </div>
                         @else
                             <div class="p-6 sm:p-8 text-center text-gray-500 rounded-lg bg-gray-100 dark:bg-gray-700">
@@ -217,12 +229,15 @@
         const csrf = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const lessonId = {{ $lesson->id }};
         const videoElement = document.getElementById('lesson-video');
+        const audioElements = document.querySelectorAll('.lesson-audio');
+        const pdfViewer = document.getElementById('pdf-viewer');
+        const pdfScroll = document.getElementById('pdf-scroll');
         const progressBar = document.getElementById('progress-bar-{{ $lesson->id }}');
         const progressText = document.getElementById('progress-text-{{ $lesson->id }}');
 
-        function sendProgress(completed = false) {
-            const current = videoElement ? (videoElement.currentTime || 0) : 0;
-            const duration = videoElement ? (videoElement.duration || 1) : 1;
+        function sendProgress(current, duration, completed = false) {
+            const safeCurrent = Number.isFinite(current) ? current : 0;
+            const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 1;
 
             fetch('{{ route('progress.store') }}', {
                 method: 'POST',
@@ -232,8 +247,8 @@
                 },
                 body: JSON.stringify({
                     lesson_id: lessonId,
-                    current_time: current,
-                    duration: duration,
+                    current_time: safeCurrent,
+                    duration: safeDuration,
                     completed: completed
                 })
             })
@@ -244,8 +259,9 @@
                     progressText.textContent = percentage + '%';
                     progressBar.style.width = percentage + '%';
                     
-                    // Salva em localStorage também
-                    localStorage.setItem(`video_progress_${lessonId}`, current);
+                    if (videoElement) {
+                        localStorage.setItem(`video_progress_${lessonId}`, safeCurrent);
+                    }
                 }
             })
             .catch(error => console.error('Erro ao salvar progresso:', error));
@@ -262,19 +278,93 @@
             let saveTimer;
             videoElement.addEventListener('play', () => {
                 if (saveTimer) clearInterval(saveTimer);
-                saveTimer = setInterval(() => sendProgress(false), 10000); // Salva a cada 10s
+                saveTimer = setInterval(() => sendProgress(videoElement.currentTime || 0, videoElement.duration || 1, false), 10000);
             });
             videoElement.addEventListener('pause', () => {
                 if (saveTimer) clearInterval(saveTimer);
-                sendProgress(false);
+                sendProgress(videoElement.currentTime || 0, videoElement.duration || 1, false);
             });
             videoElement.addEventListener('ended', () => {
                 if (saveTimer) clearInterval(saveTimer);
-                sendProgress(true);
+                sendProgress(videoElement.currentTime || 0, videoElement.duration || 1, true);
             });
         }
 
-        document.getElementById('markDone')?.addEventListener('click', () => sendProgress(true));
+        if (audioElements.length > 0) {
+            const audioHandler = () => {
+                const percents = Array.from(audioElements).map((audio) => {
+                    const duration = audio.duration || 1;
+                    const current = audio.currentTime || 0;
+                    return Math.round((current / duration) * 100);
+                });
+                const maxPercent = Math.max(0, ...percents);
+                sendProgress(maxPercent, 100, maxPercent >= 95);
+            };
+
+            audioElements.forEach((audio) => {
+                audio.addEventListener('timeupdate', audioHandler);
+                audio.addEventListener('ended', audioHandler);
+                audio.addEventListener('pause', audioHandler);
+            });
+        }
+
+        function setupPdfTracking() {
+            if (!pdfViewer || !pdfScroll) {
+                return;
+            }
+
+            const pdfUrl = pdfViewer.dataset.pdfUrl;
+            if (!pdfUrl) {
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+            script.onload = () => {
+                const pdfjsLib = window['pdfjs-dist/build/pdf'];
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                pdfjsLib.getDocument(pdfUrl).promise.then((pdf) => {
+                    const totalPages = pdf.numPages;
+                    const renderPage = (pageNum) => {
+                        pdf.getPage(pageNum).then((page) => {
+                            const viewport = page.getViewport({ scale: 1.2 });
+                            const canvas = document.createElement('canvas');
+                            const context = canvas.getContext('2d');
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            canvas.className = 'w-full bg-white rounded shadow';
+                            pdfViewer.appendChild(canvas);
+
+                            const renderContext = { canvasContext: context, viewport };
+                            page.render(renderContext);
+                        });
+                    };
+
+                    for (let i = 1; i <= totalPages; i += 1) {
+                        renderPage(i);
+                    }
+                });
+            };
+            document.body.appendChild(script);
+
+            let pdfTimer;
+            const onScroll = () => {
+                if (pdfTimer) clearTimeout(pdfTimer);
+                pdfTimer = setTimeout(() => {
+                    const scrollTop = pdfScroll.scrollTop;
+                    const scrollHeight = pdfScroll.scrollHeight - pdfScroll.clientHeight;
+                    const percent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
+                    sendProgress(percent, 100, percent >= 95);
+                }, 200);
+            };
+
+            pdfScroll.addEventListener('scroll', onScroll);
+        }
+
+        setupPdfTracking();
+
+        document.getElementById('markDone')?.addEventListener('click', () => sendProgress(100, 100, true));
 
         function submitQuiz() {
             alert('Quiz enviado! (Função de validação será implementada)');
