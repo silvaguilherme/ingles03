@@ -15,7 +15,7 @@
             <div class="flex gap-2">
                 <form method="POST" action="{{ route('submodules.complete', $subModule) }}" class="inline">
                     @csrf
-                    <button type="submit" class="px-4 py-2 {{ ($subModuleProgress && $subModuleProgress->completed) ? 'bg-green-600' : 'bg-emerald-500' }} text-white rounded-lg hover:opacity-90">
+                    <button type="submit" class="px-4 py-2 {{ ($subModuleProgress && $subModuleProgress->completed) ? 'bg-green-600' : 'bg-emerald-500' }} text-white rounded-lg hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed" data-loading-text="⏳ Processando...">
                         {{ ($subModuleProgress && $subModuleProgress->completed) ? '✓ Finalizado' : 'Finalizar' }}
                     </button>
                 </form>
@@ -24,7 +24,7 @@
                 </a>
                 <form method="POST" action="{{ route('submodules.destroy', $subModule) }}" class="inline">
                     @csrf @method('DELETE')
-                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700" onclick="return confirm('Tem certeza que deseja deletar este submódulo?')">
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed" onclick="return confirm('Tem certeza que deseja deletar este submódulo?')" data-loading-text="⏳ Deletando...">
                         🗑️ Deletar
                     </button>
                 </form>
@@ -135,3 +135,36 @@
         </div>
     </div>
 </x-app-layout>
+
+<script>
+    // Add loading states to all buttons
+    document.querySelectorAll('button[type="submit"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            if (this.hasAttribute('data-loading-text')) {
+                this.disabled = true;
+                const originalText = this.textContent;
+                this.setAttribute('data-original-text', originalText);
+                this.textContent = this.getAttribute('data-loading-text');
+                
+                // Re-enable button after 5 seconds if form doesn't submit
+                setTimeout(() => {
+                    this.disabled = false;
+                    this.textContent = this.getAttribute('data-original-text');
+                }, 5000);
+            }
+        });
+    });
+
+    // Handle form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn && submitBtn.hasAttribute('data-loading-text')) {
+                submitBtn.disabled = true;
+                const originalText = submitBtn.textContent;
+                submitBtn.setAttribute('data-original-text', originalText);
+                submitBtn.textContent = submitBtn.getAttribute('data-loading-text');
+            }
+        });
+    });
+</script>

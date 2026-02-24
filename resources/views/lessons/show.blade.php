@@ -26,11 +26,11 @@
                     <div class="mb-5 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-700 dark:to-gray-600 rounded-lg">
                         <div class="flex justify-between items-center mb-2">
                             <h3 class="font-semibold text-sm text-gray-700 dark:text-gray-300">Seu Progresso</h3>
-                            <span id="progress-text-{{ $lesson->id }}" class="text-2xl font-bold text-blue-600">{{ $progress->percentage }}%</span>
+                            <span id="progress-text-{{ $lesson->id }}" class="text-2xl font-bold text-blue-600" title="{{ $progress->percentage }}% completado">{{ $progress->percentage }}%</span>
                         </div>
-                        <div class="w-full bg-gray-300 rounded-full h-3 dark:bg-gray-500 overflow-hidden">
-                            <div id="progress-bar-{{ $lesson->id }}" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 transition-all duration-300" 
-                                 style="width: {{ $progress->percentage }}%"></div>
+                        <div class="w-full bg-gray-300 rounded-full h-3 dark:bg-gray-500 overflow-hidden relative">
+                            <div id="progress-bar-{{ $lesson->id }}" class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 transition-all duration-500 ease-out" 
+                                 style="width: {{ $progress->percentage }}%" title="{{ $progress->percentage }}% completado"></div>
                         </div>
                         @if($progress->completed)
                             <p class="text-sm text-green-600 dark:text-green-400 mt-3 font-semibold">✅ Aula Concluída!</p>
@@ -79,12 +79,14 @@
                             
                             @if($lesson->content_type !== 'video')
                                 <button id="markDone"
-                                        class="w-full px-4 py-3 bg-green-600 text-white rounded font-medium text-sm min-h-10 flex items-center justify-center hover:bg-green-700 active:bg-green-800 transition">
+                                        class="w-full px-4 py-3 bg-green-600 text-white rounded font-medium text-sm min-h-10 flex items-center justify-center hover:bg-green-700 active:bg-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        data-loading-text="⏳ Processando...">
                                     {{ $progress->completed ? '✅ Concluído' : '✓ Marcar como Concluído' }}
                                 </button>
                             @elseif($videoUrl)
                                 <button id="markDone"
-                                        class="w-full px-4 py-3 bg-green-600 text-white rounded font-medium text-sm min-h-10 flex items-center justify-center hover:bg-green-700 active:bg-green-800 transition">
+                                        class="w-full px-4 py-3 bg-green-600 text-white rounded font-medium text-sm min-h-10 flex items-center justify-center hover:bg-green-700 active:bg-green-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        data-loading-text="⏳ Processando...">
                                     {{ $progress->completed ? '✅ Concluído' : '✓ Marcar como Concluído' }}
                                 </button>
                             @endif
@@ -99,7 +101,7 @@
                         </a>
                         <form method="POST" action="{{ route('lessons.destroy', $lesson) }}" class="inline-block w-full" onclick="return confirm('Tem certeza que deseja deletar esta aula?')">
                             @csrf @method('DELETE')
-                            <button type="submit" class="w-full px-4 py-3 bg-red-600 text-white rounded font-medium text-sm min-h-10 hover:bg-red-700 active:bg-red-800 transition">
+                            <button type="submit" class="w-full px-4 py-3 bg-red-600 text-white rounded font-medium text-sm min-h-10 hover:bg-red-700 active:bg-red-800 transition disabled:opacity-50 disabled:cursor-not-allowed" data-loading-text="⏳ Deletando...">
                                 🗑️ Deletar
                             </button>
                         </form>
@@ -169,11 +171,11 @@
                     @case('pdf')
                         @if($pdfUrl)
                             <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
-                                <div id="pdf-scroll" class="overflow-y-auto" style="height: 70vh;">
+                                <div id="pdf-scroll" class="overflow-y-auto" style="height: 70vh; max-height: calc(100vh - 150px);">
                                     <div id="pdf-viewer" data-pdf-url="{{ $pdfUrl }}" class="p-4 space-y-4"></div>
                                 </div>
                                 <noscript>
-                                    <iframe src="{{ $pdfUrl }}" class="w-full" style="height: 500px; min-height: 60vh;"></iframe>
+                                    <iframe src="{{ $pdfUrl }}" class="w-full" style="height: 500px; min-height: 60vh; max-height: calc(100vh - 150px);"></iframe>
                                 </noscript>
                             </div>
                         @else
@@ -370,5 +372,34 @@
             alert('Quiz enviado! (Função de validação será implementada)');
             sendProgress(true);
         }
+
+        // Add loading states to all buttons
+        document.querySelectorAll('button[type="submit"]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.hasAttribute('data-loading-text')) {
+                    this.disabled = true;
+                    const originalText = this.textContent;
+                    this.textContent = this.getAttribute('data-loading-text');
+                    
+                    // Re-enable button after 5 seconds if form doesn't submit
+                    setTimeout(() => {
+                        this.disabled = false;
+                        this.textContent = originalText;
+                    }, 5000);
+                }
+            });
+        });
+
+        // Handle form submissions
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const submitBtn = this.querySelector('button[type="submit"]');
+                if (submitBtn && submitBtn.hasAttribute('data-loading-text')) {
+                    submitBtn.disabled = true;
+                    const originalText = submitBtn.textContent;
+                    submitBtn.textContent = submitBtn.getAttribute('data-loading-text');
+                }
+            });
+        });
     </script>
 </x-app-layout>

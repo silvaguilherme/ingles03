@@ -37,7 +37,9 @@
                     </div>
 
                     <button type="submit" 
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors">
+                            id="importBtn"
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            data-loading-text="⏳ Importando...">
                         🚀 Iniciar Importação
                     </button>
                 </form>
@@ -50,7 +52,7 @@
                     <div id="consoleOutput" class="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-y-auto max-h-96 whitespace-pre-wrap break-words"></div>
                     
                     <div class="mt-4 flex gap-2">
-                        <button onclick="window.location.reload()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                        <button onclick="window.location.reload()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
                             ✓ Feito
                         </button>
                         <a href="{{ route('anki.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700">
@@ -126,6 +128,18 @@
                 outputContainer.classList.remove('hidden');
                 consoleOutput.textContent = `Erro: ${error.message}`;
             }
+        });
+
+        // Add loading states to buttons
+        document.querySelectorAll('button[type="submit"]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (this.hasAttribute('data-loading-text')) {
+                    this.disabled = true;
+                    const originalText = this.textContent;
+                    this.setAttribute('data-original-text', originalText);
+                    this.textContent = this.getAttribute('data-loading-text');
+                }
+            });
         });
     </script>
 </x-app-layout>
