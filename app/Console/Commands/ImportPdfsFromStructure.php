@@ -43,7 +43,8 @@ class ImportPdfsFromStructure extends Command
                 continue;
             }
 
-            $this->line("📂 {$folderNum}/pdf - {count($pdfFiles)} PDF(s):");
+            $pdfCount = count($pdfFiles);
+            $this->line("📂 {$folderNum}/pdf - {$pdfCount} PDF(s):");
 
             foreach ($pdfFiles as $pdfFile) {
                 $filename = $pdfFile->getFilename();
