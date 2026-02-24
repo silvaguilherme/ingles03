@@ -63,21 +63,34 @@ class ImportAudiosFromStructure extends Command
                 $audioCount = count($audioFiles);
                 $this->line("🔊 {$folderNum}/audio - {$audioCount} audio(s):");
 
+                $lessons = Lesson::where('sub_module_id', $subModule->id)
+                    ->get(['id', 'title'])
+                    ->map(function ($lesson) {
+                        return [
+                            'id' => $lesson->id,
+                            'title' => $lesson->title,
+                            'normalized' => $this->normalizeLessonTitle($lesson->title),
+                        ];
+                    })
+                    ->all();
+
                 foreach ($audioFiles as $audioFile) {
                     $filename = $audioFile->getFilename();
                     $relativePath = str_replace(storage_path('app/public/'), '', str_replace('\\', '/', $audioFile->getPathname()));
                     $baseName = trim($audioFile->getBasename('.' . $audioFile->getExtension()));
 
-                    $lesson = Lesson::where('sub_module_id', $subModule->id)
-                        ->where(function ($query) use ($baseName) {
-                            $query->where('title', 'like', $baseName . '%')
-                                ->orWhere('title', 'like', '%' . $baseName . '%');
-                        })
-                        ->first();
+                    $normalizedAudio = $this->normalizeAudioTitle($baseName);
+                    if ($normalizedAudio === '') {
+                        $this->warn("  ❌ {$filename} → Nome do audio invalido");
+                        $notFound++;
+                        continue;
+                    }
 
-                    if ($lesson) {
-                        $lesson->update(['audio_key' => $relativePath]);
-                        $this->line("  ✅ {$filename} → Lesson #{$lesson->id}: {$lesson->title}");
+                    $match = $this->findBestLessonMatch($normalizedAudio, $lessons);
+
+                    if ($match) {
+                        Lesson::where('id', $match['id'])->update(['audio_key' => $relativePath]);
+                        $this->line("  ✅ {$filename} → Lesson #{$match['id']}: {$match['title']}");
                         $linked++;
                     } else {
                         $this->warn("  ❌ {$filename} → Nenhuma lesson encontrada");
@@ -152,5 +165,64 @@ class ImportAudiosFromStructure extends Command
     {
         $value = strtolower($value);
         return preg_replace('/[^a-z0-9]+/', '', $value);
+    }
+
+    private function normalizeAudioTitle(string $value): string
+    {
+        $value = strtolower($value);
+        $value = preg_replace('/\b(audio|audiocompleto|completo|complete|completeaudio)\b/', ' ', $value);
+        $value = preg_replace('/\b(audio)\b/', ' ', $value);
+        $value = preg_replace('/\b(pdf|video)\b/', ' ', $value);
+        $value = preg_replace('/\b\d{1,3}\b/', ' ', $value);
+
+        $speakers = [
+            'jake', 'moira', 'harry', 'daniel', 'natalie', 'kathy', 'charlie',
+            'josh', 'jacob', 'steve', 'jobs',
+        ];
+        foreach ($speakers as $speaker) {
+            $value = preg_replace('/\b' . preg_quote($speaker, '/') . '\b/', ' ', $value);
+        }
+
+        $value = preg_replace('/[^a-z0-9]+/', ' ', $value);
+        $value = trim(preg_replace('/\s+/', ' ', $value));
+
+        return $value;
+    }
+
+    private function normalizeLessonTitle(string $value): string
+    {
+        $value = strtolower($value);
+        $value = preg_replace('/\b(pdf|audio|video)\b/', ' ', $value);
+        $value = preg_replace('/\b\d{1,3}\b/', ' ', $value);
+        $value = preg_replace('/[^a-z0-9]+/', ' ', $value);
+        $value = trim(preg_replace('/\s+/', ' ', $value));
+
+        return $value;
+    }
+
+    private function findBestLessonMatch(string $normalizedAudio, array $lessons): ?array
+    {
+        $candidates = [];
+        foreach ($lessons as $lesson) {
+            $normalizedLesson = $lesson['normalized'];
+            if ($normalizedLesson === '') {
+                continue;
+            }
+
+            if (str_contains($normalizedLesson, $normalizedAudio) || str_contains($normalizedAudio, $normalizedLesson)) {
+                $score = abs(strlen($normalizedLesson) - strlen($normalizedAudio));
+                $candidates[] = ['score' => $score, 'lesson' => $lesson];
+            }
+        }
+
+        if (empty($candidates)) {
+            return null;
+        }
+
+        usort($candidates, function ($a, $b) {
+            return $a['score'] <=> $b['score'];
+        });
+
+        return $candidates[0]['lesson'];
     }
 }
