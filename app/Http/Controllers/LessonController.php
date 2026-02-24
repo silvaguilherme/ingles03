@@ -17,13 +17,14 @@ class LessonController extends Controller
         // Remove leading slash from paths if present
         $videoUrl = $lesson->video_key ? asset('storage/' . ltrim($lesson->video_key, '/')) : null;
         $pdfUrl   = $lesson->pdf_key ? asset('storage/' . ltrim($lesson->pdf_key, '/')) : null;
+        $audioUrl = $lesson->audio_key ? asset('storage/' . ltrim($lesson->audio_key, '/')) : null;
 
         $progress = Progress::firstOrCreate(
             ['user_id' => Auth::id(), 'lesson_id' => $lesson->id],
             ['watched_seconds' => 0, 'percentage' => 0, 'completed' => false]
         );
 
-        return view('lessons.show', compact('lesson','videoUrl','pdfUrl','progress'));
+        return view('lessons.show', compact('lesson','videoUrl','pdfUrl','audioUrl','progress'));
     }
 
     public function create(SubModule $subModule)
@@ -40,9 +41,10 @@ class LessonController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'sub_title' => 'nullable|string|max:255',
-            'content_type' => 'required|in:video,pdf,quiz,text',
+            'content_type' => 'required|in:video,pdf,quiz,text,audio,anki',
             'video_key' => 'nullable|string',
             'pdf_key' => 'nullable|string',
+            'audio_key' => 'nullable|string',
             'duration_seconds' => 'nullable|integer|min:0',
             'quiz_data' => 'nullable|json',
             'order' => 'required|integer|min:1',
@@ -71,9 +73,10 @@ class LessonController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'sub_title' => 'nullable|string|max:255',
-            'content_type' => 'required|in:video,pdf,quiz,text',
+            'content_type' => 'required|in:video,pdf,quiz,text,audio,anki',
             'video_key' => 'nullable|string',
             'pdf_key' => 'nullable|string',
+            'audio_key' => 'nullable|string',
             'duration_seconds' => 'nullable|integer|min:0',
             'quiz_data' => 'nullable|json',
             'order' => 'required|integer|min:1',

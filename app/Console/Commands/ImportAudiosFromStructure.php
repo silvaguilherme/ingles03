@@ -2,26 +2,27 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Lesson;
 use App\Models\Module;
 use App\Models\SubModule;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
-class CreatePdfAudioStructure extends Command
+class ImportAudiosFromStructure extends Command
 {
-    protected $signature = 'create:pdf-audio-structure {--base-path= : Caminho base dos submodulos}';
-    protected $description = 'Criar estrutura de pastas pdf/ e audio/ para cada submodulo';
+    protected $signature = 'import:audios {--base-path= : Caminho base dos submodulos}';
+    protected $description = 'Importar audios da estrutura /XX/audio/ e associar as lessons';
 
     public function handle()
     {
         $basePath = $this->option('base-path') ?? storage_path('app/public/videos');
 
         if (!is_dir($basePath)) {
-            $this->error("Diretório não encontrado: {$basePath}");
+            $this->error("Diretorio nao encontrado: {$basePath}");
             return 1;
         }
 
-        $this->info('=== CRIANDO ESTRUTURA PDF E AUDIO ===');
+        $this->info('=== IMPORTANDO AUDIOS ===');
         $this->newLine();
 
         $moduleRoots = $this->getModuleRoots($basePath);
@@ -30,7 +31,9 @@ class CreatePdfAudioStructure extends Command
             return 0;
         }
 
-        $created = 0;
+        $linked = 0;
+        $notFound = 0;
+        $audioExtensions = ['mp3', 'wav', 'm4a', 'ogg'];
 
         foreach ($moduleRoots as $moduleRoot) {
             $moduleName = basename($moduleRoot);
@@ -40,37 +43,57 @@ class CreatePdfAudioStructure extends Command
             $subModules = $module ? $module->subModules : SubModule::all();
 
             foreach ($subModules as $subModule) {
-                $subFolderNum = str_pad($subModule->title, 2, '0', STR_PAD_LEFT);
-                $subFolderPath = $moduleRoot . '/' . $subFolderNum;
+                $folderNum = str_pad($subModule->title, 2, '0', STR_PAD_LEFT);
+                $audioDir = $moduleRoot . '/' . $folderNum . '/audio';
 
-                if (!is_dir($subFolderPath)) {
-                    $this->warn("Pasta não existe: {$subFolderPath}");
+                if (!is_dir($audioDir)) {
+                    $this->line("ℹ️  {$folderNum}/audio - Pasta nao existe");
                     continue;
                 }
 
-                $pdfPath = $subFolderPath . '/pdf';
-                if (!is_dir($pdfPath)) {
-                    mkdir($pdfPath, 0755, true);
-                    $this->line("✅ Criada: {$pdfPath}");
-                    $created++;
-                } else {
-                    $this->line("ℹ️  Existe: {$pdfPath}");
+                $audioFiles = array_filter(File::files($audioDir), function ($file) use ($audioExtensions) {
+                    return in_array(strtolower($file->getExtension()), $audioExtensions, true);
+                });
+
+                if (empty($audioFiles)) {
+                    $this->line("ℹ️  {$folderNum}/audio - Nenhum audio encontrado");
+                    continue;
                 }
 
-                $audioPath = $subFolderPath . '/audio';
-                if (!is_dir($audioPath)) {
-                    mkdir($audioPath, 0755, true);
-                    $this->line("✅ Criada: {$audioPath}");
-                    $created++;
-                } else {
-                    $this->line("ℹ️  Existe: {$audioPath}");
+                $audioCount = count($audioFiles);
+                $this->line("🔊 {$folderNum}/audio - {$audioCount} audio(s):");
+
+                foreach ($audioFiles as $audioFile) {
+                    $filename = $audioFile->getFilename();
+                    $relativePath = str_replace(storage_path('app/public/'), '', str_replace('\\', '/', $audioFile->getPathname()));
+                    $baseName = trim($audioFile->getBasename('.' . $audioFile->getExtension()));
+
+                    $lesson = Lesson::where('sub_module_id', $subModule->id)
+                        ->where(function ($query) use ($baseName) {
+                            $query->where('title', 'like', $baseName . '%')
+                                ->orWhere('title', 'like', '%' . $baseName . '%');
+                        })
+                        ->first();
+
+                    if ($lesson) {
+                        $lesson->update(['audio_key' => $relativePath]);
+                        $this->line("  ✅ {$filename} → Lesson #{$lesson->id}: {$lesson->title}");
+                        $linked++;
+                    } else {
+                        $this->warn("  ❌ {$filename} → Nenhuma lesson encontrada");
+                        $notFound++;
+                    }
                 }
+
+                $this->newLine();
             }
 
             $this->newLine();
         }
 
-        $this->info("Total de pastas criadas: {$created}");
+        $this->info('=== RESULTADO ===');
+        $this->line("✅ Associados: {$linked}");
+        $this->warn("❌ Nao encontrados: {$notFound}");
 
         return 0;
     }

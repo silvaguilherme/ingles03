@@ -44,6 +44,7 @@
                             @switch($lesson->content_type)
                                 @case('video') 🎥 Vídeo @break
                                 @case('pdf') 📄 PDF @break
+                                @case('audio') 🔊 Áudio @break
                                 @case('quiz') 🧪 Quiz @break
                                 @case('text') 📝 Texto @break
                                 @default {{ $lesson->content_type }}
@@ -60,12 +61,19 @@
                     @endif
 
                     <!-- Resources -->
-                    @if($pdfUrl || $videoUrl)
+                    @if($pdfUrl || $videoUrl || $audioUrl)
                         <div class="space-y-2 mb-4">
                             @if($pdfUrl)
                                 <a href="{{ $pdfUrl }}" target="_blank" rel="noopener"
                                    class="w-full block px-4 py-3 bg-red-600 text-white rounded font-medium text-center text-sm min-h-10 flex items-center justify-center hover:bg-red-700 active:bg-red-800 transition">
                                     📄 Baixar PDF
+                                </a>
+                            @endif
+
+                            @if($audioUrl)
+                                <a href="{{ $audioUrl }}" target="_blank" rel="noopener"
+                                   class="w-full block px-4 py-3 bg-indigo-600 text-white rounded font-medium text-center text-sm min-h-10 flex items-center justify-center hover:bg-indigo-700 active:bg-indigo-800 transition">
+                                    🔊 Baixar Áudio
                                 </a>
                             @endif
                             
@@ -115,6 +123,22 @@
                             <div class="p-6 sm:p-8 text-center text-gray-500 rounded-lg bg-gray-100 dark:bg-gray-700 mb-4">
                                 <p class="text-3xl sm:text-4xl mb-2">🎥</p>
                                 <p class="text-sm sm:text-base">Vídeo não disponível</p>
+                            </div>
+                        @endif
+                        @break
+
+                    @case('audio')
+                        @if($audioUrl)
+                            <div class="mb-4 sm:mb-6 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-700">
+                                <audio controls class="w-full">
+                                    <source src="{{ $audioUrl }}" type="audio/mpeg"/>
+                                    Seu navegador não suporta áudio HTML5.
+                                </audio>
+                            </div>
+                        @else
+                            <div class="p-6 sm:p-8 text-center text-gray-500 rounded-lg bg-gray-100 dark:bg-gray-700 mb-4">
+                                <p class="text-3xl sm:text-4xl mb-2">🔊</p>
+                                <p class="text-sm sm:text-base">Áudio não disponível</p>
                             </div>
                         @endif
                         @break

@@ -36,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
                 \App\Console\Commands\CreatePdfAudioStructure::class,
                 \App\Console\Commands\ReorganizePdfs::class,
                 \App\Console\Commands\ImportPdfsFromStructure::class,
+                \App\Console\Commands\ReorganizeAudios::class,
+                \App\Console\Commands\ImportAudiosFromStructure::class,
             ]);
         }
     }

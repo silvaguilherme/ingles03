@@ -49,6 +49,7 @@
                                     <option value="">-- Selecione --</option>
                                     <option value="video" {{ (isset($lesson) ? $lesson->content_type : old('content_type')) === 'video' ? 'selected' : '' }}>🎥 Vídeo</option>
                                     <option value="pdf" {{ (isset($lesson) ? $lesson->content_type : old('content_type')) === 'pdf' ? 'selected' : '' }}>📄 PDF</option>
+                                    <option value="audio" {{ (isset($lesson) ? $lesson->content_type : old('content_type')) === 'audio' ? 'selected' : '' }}>🔊 Áudio</option>
                                     <option value="quiz" {{ (isset($lesson) ? $lesson->content_type : old('content_type')) === 'quiz' ? 'selected' : '' }}>🧪 Quiz</option>
                                     <option value="text" {{ (isset($lesson) ? $lesson->content_type : old('content_type')) === 'text' ? 'selected' : '' }}>📝 Texto</option>
                                 </select>
@@ -85,6 +86,15 @@
                                 <input type="text" name="pdf_key" id="pdf_key" 
                                        class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10"
                                        value="{{ isset($lesson) ? $lesson->pdf_key : old('pdf_key') }}" placeholder="Ex: pdfs/mod1/aula1.pdf">
+                            </div>
+
+                            <div>
+                                <label for="audio_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Chave do Áudio
+                                </label>
+                                <input type="text" name="audio_key" id="audio_key" 
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10"
+                                       value="{{ isset($lesson) ? $lesson->audio_key : old('audio_key') }}" placeholder="Ex: audios/mod1/aula1.mp3">
                             </div>
 
                             <div>

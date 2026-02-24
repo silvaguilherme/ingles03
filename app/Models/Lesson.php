@@ -12,6 +12,7 @@ class Lesson extends Model
         'sub_title',
         'video_key',
         'pdf_key',
+        'audio_key',
         'duration_seconds',
         'order',
         'content_type',

@@ -46,6 +46,7 @@
                                     <option value="">-- Selecione --</option>
                                     <option value="video" {{ $lesson->content_type === 'video' ? 'selected' : '' }}>Vídeo</option>
                                     <option value="pdf" {{ $lesson->content_type === 'pdf' ? 'selected' : '' }}>PDF</option>
+                                    <option value="audio" {{ $lesson->content_type === 'audio' ? 'selected' : '' }}>Áudio</option>
                                     <option value="quiz" {{ $lesson->content_type === 'quiz' ? 'selected' : '' }}>Quiz</option>
                                     <option value="text" {{ $lesson->content_type === 'text' ? 'selected' : '' }}>Texto</option>
                                 </select>
@@ -82,6 +83,15 @@
                                 <input type="text" name="pdf_key" id="pdf_key" 
                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                                        value="{{ $lesson->pdf_key }}">
+                            </div>
+
+                            <div>
+                                <label for="audio_key" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                    Chave do Áudio (ex: audios/mod1/aula1.mp3)
+                                </label>
+                                <input type="text" name="audio_key" id="audio_key" 
+                                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                                       value="{{ $lesson->audio_key }}">
                             </div>
 
                             <div>

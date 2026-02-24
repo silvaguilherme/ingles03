@@ -5,10 +5,10 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
-class ReorganizePdfs extends Command
+class ReorganizeAudios extends Command
 {
-    protected $signature = 'organize:pdfs {--base-path= : Caminho base dos submodulos} {--dry-run : Simular sem mover}';
-    protected $description = 'Reorganizar PDFs existentes para as pastas /pdf de cada submodulo';
+    protected $signature = 'organize:audios {--base-path= : Caminho base dos submodulos} {--dry-run : Simular sem mover}';
+    protected $description = 'Reorganizar audios existentes para as pastas /audio de cada submodulo';
 
     public function handle()
     {
@@ -20,9 +20,9 @@ class ReorganizePdfs extends Command
             return 1;
         }
 
-        $this->info('=== REORGANIZANDO PDFs ===');
+        $this->info('=== REORGANIZANDO AUDIOS ===');
         if ($dryRun) {
-            $this->warn('(DRY RUN - nenhum arquivo será movido)');
+            $this->warn('(DRY RUN - nenhum arquivo sera movido)');
         }
         $this->newLine();
 
@@ -32,62 +32,55 @@ class ReorganizePdfs extends Command
             return 0;
         }
 
-        // Procurar todos os PDFs no diretório
+        $audioExtensions = ['mp3', 'wav', 'm4a', 'ogg'];
         $allFiles = File::allFiles($basePath);
-        $pdfFiles = array_filter($allFiles, function ($file) {
-            return strtolower($file->getExtension()) === 'pdf';
+        $audioFiles = array_filter($allFiles, function ($file) use ($audioExtensions) {
+            return in_array(strtolower($file->getExtension()), $audioExtensions, true);
         });
 
-        $this->line("PDFs encontrados: " . count($pdfFiles));
+        $this->line('Audios encontrados: ' . count($audioFiles));
         $this->newLine();
 
         $moved = 0;
         $failed = 0;
 
-        // Agrupar PDFs por submodulo
-        foreach ($pdfFiles as $pdfFile) {
-            $pdfPath = str_replace('\\', '/', $pdfFile->getPathname());
-            $filename = $pdfFile->getFilename();
+        foreach ($audioFiles as $audioFile) {
+            $audioPath = str_replace('\\', '/', $audioFile->getPathname());
+            $filename = $audioFile->getFilename();
 
-            // Extrair o número do submodulo do caminho
-            // Esperado: /01-fundacao/00/arquivo.pdf ou /01-fundacao/01/arquivo.pdf
-            if (preg_match('~\/(\d{1,3})\/[^\/]*\.pdf$~', $pdfPath, $matches)) {
+            if (preg_match('~\/(\d{1,3})\/[^\/]*\.(mp3|wav|m4a|ogg)$~i', $audioPath, $matches)) {
                 $folderNum = $matches[1];
-                $moduleRoot = $this->findModuleRoot($pdfPath, $moduleRoots);
+                $moduleRoot = $this->findModuleRoot($audioPath, $moduleRoots);
                 if (!$moduleRoot) {
-                    $this->warn("❌ {$filename} - Modulo não identificado");
+                    $this->warn("❌ {$filename} - Modulo nao identificado");
                     $failed++;
                     continue;
                 }
 
-                // Destino: /<modulo>/XX/pdf/arquivo.pdf
-                $destDir = $moduleRoot . '/' . str_pad($folderNum, 2, '0', STR_PAD_LEFT) . '/pdf';
+                $destDir = $moduleRoot . '/' . str_pad($folderNum, 2, '0', STR_PAD_LEFT) . '/audio';
                 $destPath = $destDir . '/' . $filename;
 
-                // Pular se o arquivo já está no destino
-                if (dirname($pdfPath) === $destDir) {
-                    $this->line("ℹ️  {$filename} - Já está no destino ({$folderNum}/pdf/)");
+                if (dirname($audioPath) === $destDir) {
+                    $this->line("ℹ️  {$filename} - Ja esta no destino ({$folderNum}/audio/)");
                     continue;
                 }
 
                 if (file_exists($destPath)) {
-                    $this->warn("⚠️  {$filename} - Arquivo já existe no destino, pulando");
+                    $this->warn("⚠️  {$filename} - Arquivo ja existe no destino, pulando");
                     continue;
                 }
 
                 if ($dryRun) {
                     $this->line("→ {$filename}");
-                    $this->line("  De: {$pdfPath}");
+                    $this->line("  De: {$audioPath}");
                     $this->line("  Para: {$destPath}");
                 } else {
-                    // Criar diretório se não existir
                     if (!is_dir($destDir)) {
                         mkdir($destDir, 0755, true);
                     }
 
-                    // Mover arquivo
-                    if (rename($pdfPath, $destPath)) {
-                        $this->line("✅ {$filename} → {$folderNum}/pdf/");
+                    if (rename($audioPath, $destPath)) {
+                        $this->line("✅ {$filename} → {$folderNum}/audio/");
                         $moved++;
                     } else {
                         $this->warn("❌ {$filename} - Erro ao mover");
@@ -100,7 +93,7 @@ class ReorganizePdfs extends Command
         $this->newLine();
         $this->info('=== RESULTADO ===');
         if ($dryRun) {
-            $this->line("(DRY RUN - Nenhum arquivo foi movido)");
+            $this->line('(DRY RUN - Nenhum arquivo foi movido)');
         } else {
             $this->line("✅ Movidos: {$moved}");
             $this->warn("❌ Falhados: {$failed}");
