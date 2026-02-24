@@ -70,6 +70,8 @@ class ImportAudiosFromStructure extends Command
                             'id' => $lesson->id,
                             'title' => $lesson->title,
                             'normalized' => $this->normalizeLessonTitle($lesson->title),
+                            'numbers' => $this->extractNumbers($lesson->title),
+                            'is_complete' => $this->isCompleteTitle($lesson->title),
                         ];
                     })
                     ->all();
@@ -79,14 +81,15 @@ class ImportAudiosFromStructure extends Command
                     $relativePath = str_replace(storage_path('app/public/'), '', str_replace('\\', '/', $audioFile->getPathname()));
                     $baseName = trim($audioFile->getBasename('.' . $audioFile->getExtension()));
 
-                    $normalizedAudio = $this->normalizeAudioTitle($baseName);
+                    $audioInfo = $this->parseAudioInfo($baseName);
+                    $normalizedAudio = $audioInfo['normalized'];
                     if ($normalizedAudio === '') {
                         $this->warn("  ❌ {$filename} → Nome do audio invalido");
                         $notFound++;
                         continue;
                     }
 
-                    $match = $this->findBestLessonMatch($normalizedAudio, $lessons);
+                    $match = $this->findBestLessonMatch($audioInfo, $lessons);
 
                     if ($match) {
                         Lesson::where('id', $match['id'])->update(['audio_key' => $relativePath]);
@@ -163,13 +166,17 @@ class ImportAudiosFromStructure extends Command
 
     private function normalizeName(string $value): string
     {
-        $value = strtolower($value);
+        $value = $this->normalizeText($value);
         return preg_replace('/[^a-z0-9]+/', '', $value);
     }
 
-    private function normalizeAudioTitle(string $value): string
+    private function parseAudioInfo(string $value): array
     {
-        $value = strtolower($value);
+        $isComplete = $this->isCompleteTitle($value);
+        $numbers = $this->extractNumbers($value);
+        $number = $numbers[0] ?? null;
+
+        $value = $this->normalizeText($value);
         $value = preg_replace('/\b(audio|audiocompleto|completo|complete|completeaudio)\b/', ' ', $value);
         $value = preg_replace('/\b(audio)\b/', ' ', $value);
         $value = preg_replace('/\b(pdf|video)\b/', ' ', $value);
@@ -186,12 +193,16 @@ class ImportAudiosFromStructure extends Command
         $value = preg_replace('/[^a-z0-9]+/', ' ', $value);
         $value = trim(preg_replace('/\s+/', ' ', $value));
 
-        return $value;
+        return [
+            'normalized' => $value,
+            'number' => $number,
+            'is_complete' => $isComplete,
+        ];
     }
 
     private function normalizeLessonTitle(string $value): string
     {
-        $value = strtolower($value);
+        $value = $this->normalizeText($value);
         $value = preg_replace('/\b(pdf|audio|video)\b/', ' ', $value);
         $value = preg_replace('/\b\d{1,3}\b/', ' ', $value);
         $value = preg_replace('/[^a-z0-9]+/', ' ', $value);
@@ -200,17 +211,35 @@ class ImportAudiosFromStructure extends Command
         return $value;
     }
 
-    private function findBestLessonMatch(string $normalizedAudio, array $lessons): ?array
+    private function findBestLessonMatch(array $audioInfo, array $lessons): ?array
     {
+        $normalizedAudio = $audioInfo['normalized'];
+        $audioNumber = $audioInfo['number'];
+        $audioIsComplete = $audioInfo['is_complete'];
         $candidates = [];
+
         foreach ($lessons as $lesson) {
             $normalizedLesson = $lesson['normalized'];
             if ($normalizedLesson === '') {
                 continue;
             }
 
+            if ($audioNumber !== null && !in_array($audioNumber, $lesson['numbers'], true)) {
+                continue;
+            }
+
+            if ($audioIsComplete && !$lesson['is_complete']) {
+                continue;
+            }
+
             if (str_contains($normalizedLesson, $normalizedAudio) || str_contains($normalizedAudio, $normalizedLesson)) {
                 $score = abs(strlen($normalizedLesson) - strlen($normalizedAudio));
+                if ($audioNumber !== null) {
+                    $score -= 5;
+                }
+                if ($audioIsComplete && $lesson['is_complete']) {
+                    $score -= 5;
+                }
                 $candidates[] = ['score' => $score, 'lesson' => $lesson];
             }
         }
@@ -224,5 +253,26 @@ class ImportAudiosFromStructure extends Command
         });
 
         return $candidates[0]['lesson'];
+    }
+
+    private function extractNumbers(string $value): array
+    {
+        if (!preg_match_all('/\b(\d{1,3})\b/', $value, $matches)) {
+            return [];
+        }
+
+        return array_map('intval', $matches[1]);
+    }
+
+    private function isCompleteTitle(string $value): bool
+    {
+        $value = $this->normalizeText($value);
+        return (bool) preg_match('/\b(completo|complete)\b/', $value);
+    }
+
+    private function normalizeText(string $value): string
+    {
+        $value = @iconv('UTF-8', 'ASCII//TRANSLIT', $value) ?: $value;
+        return strtolower($value);
     }
 }
