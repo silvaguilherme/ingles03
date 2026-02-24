@@ -13,6 +13,7 @@ class Lesson extends Model
         'video_key',
         'pdf_key',
         'audio_key',
+        'audio_list',
         'duration_seconds',
         'order',
         'content_type',
@@ -21,6 +22,7 @@ class Lesson extends Model
 
     protected $casts = [
         'quiz_data' => 'array',
+        'audio_list' => 'array',
     ];
 
     /**

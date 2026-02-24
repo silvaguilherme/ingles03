@@ -128,7 +128,23 @@
                         @break
 
                     @case('audio')
-                        @if($audioUrl)
+                        @if(!empty($lesson->audio_list))
+                            <div class="mb-4 sm:mb-6 space-y-3">
+                                @foreach($lesson->audio_list as $audioItem)
+                                    @php
+                                        $audioItemUrl = asset('storage/' . ltrim($audioItem, '/'));
+                                        $audioLabel = basename($audioItem);
+                                    @endphp
+                                    <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-700">
+                                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">{{ $audioLabel }}</p>
+                                        <audio controls class="w-full">
+                                            <source src="{{ $audioItemUrl }}" type="audio/mpeg"/>
+                                            Seu navegador não suporta áudio HTML5.
+                                        </audio>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @elseif($audioUrl)
                             <div class="mb-4 sm:mb-6 rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 p-4 bg-gray-50 dark:bg-gray-700">
                                 <audio controls class="w-full">
                                     <source src="{{ $audioUrl }}" type="audio/mpeg"/>

@@ -76,6 +76,24 @@ class ImportAudiosFromStructure extends Command
                     })
                     ->all();
 
+                $audiosLesson = $this->findAudiosLesson($lessons);
+                if ($audiosLesson) {
+                    $audioList = array_values(array_map(function ($audioFile) {
+                        $path = str_replace('\\', '/', $audioFile->getPathname());
+                        return str_replace(storage_path('app/public/'), '', $path);
+                    }, $audioFiles));
+
+                    Lesson::where('id', $audiosLesson['id'])->update([
+                        'audio_key' => $audioList[0] ?? null,
+                        'audio_list' => $audioList,
+                    ]);
+
+                    $this->line("  ✅ Lista de audio vinculada a Lesson #{$audiosLesson['id']}: {$audiosLesson['title']}");
+                    $linked += count($audioList);
+                    $this->newLine();
+                    continue;
+                }
+
                 foreach ($audioFiles as $audioFile) {
                     $filename = $audioFile->getFilename();
                     $relativePath = str_replace(storage_path('app/public/'), '', str_replace('\\', '/', $audioFile->getPathname()));
@@ -282,5 +300,16 @@ class ImportAudiosFromStructure extends Command
     {
         $value = @iconv('UTF-8', 'ASCII//TRANSLIT', $value) ?: $value;
         return strtolower($value);
+    }
+
+    private function findAudiosLesson(array $lessons): ?array
+    {
+        foreach ($lessons as $lesson) {
+            if (in_array($lesson['normalized'], ['audio', 'audios'], true)) {
+                return $lesson;
+            }
+        }
+
+        return null;
     }
 }
