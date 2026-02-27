@@ -19,12 +19,15 @@ class LessonController extends Controller
         $pdfUrl   = $lesson->pdf_key ? asset('storage/' . ltrim($lesson->pdf_key, '/')) : null;
         $audioUrl = $lesson->audio_key ? asset('storage/' . ltrim($lesson->audio_key, '/')) : null;
 
+        // Prepara lista de áudios (pode ser array vazio)
+        $audioList = $lesson->audio_list ?? [];
+
         $progress = Progress::firstOrCreate(
             ['user_id' => Auth::id(), 'lesson_id' => $lesson->id],
             ['watched_seconds' => 0, 'percentage' => 0, 'completed' => false]
         );
 
-        return view('lessons.show', compact('lesson','videoUrl','pdfUrl','audioUrl','progress'));
+        return view('lessons.show', compact('lesson','videoUrl','pdfUrl','audioUrl','progress','audioList'));
     }
 
     public function create(SubModule $subModule)

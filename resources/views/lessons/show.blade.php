@@ -61,7 +61,7 @@
                     @endif
 
                     <!-- Resources -->
-                    @if($pdfUrl || $videoUrl || $audioUrl)
+                    @if($pdfUrl || $videoUrl || $audioUrl || !empty($audioList))
                         <div class="space-y-2 mb-4">
                             @if($pdfUrl)
                                 <a href="{{ $pdfUrl }}" target="_blank" rel="noopener"
@@ -70,11 +70,32 @@
                                 </a>
                             @endif
 
-                            @if($audioUrl)
-                                <a href="{{ $audioUrl }}" target="_blank" rel="noopener"
-                                   class="w-full block px-4 py-3 bg-indigo-600 text-white rounded font-medium text-center text-sm min-h-10 flex items-center justify-center hover:bg-indigo-700 active:bg-indigo-800 transition">
-                                    🔊 Baixar Áudio
-                                </a>
+                            @if($audioUrl || !empty($audioList))
+                                @if($audioUrl)
+                                    <a href="{{ $audioUrl }}" target="_blank" rel="noopener"
+                                       class="w-full block px-4 py-3 bg-indigo-600 text-white rounded font-medium text-center text-sm min-h-10 flex items-center justify-center hover:bg-indigo-700 active:bg-indigo-800 transition">
+                                        🔊 Baixar Áudio
+                                    </a>
+                                @endif
+                                @if(!empty($audioList) && count($audioList) > 0)
+                                    <div class="space-y-1">
+                                        @foreach($audioList as $idx => $audioItem)
+                                            @php
+                                                $audioItemUrl = asset('storage/' . ltrim($audioItem, '/'));
+                                                $audioLabel = pathinfo($audioItem, PATHINFO_FILENAME);
+                                                $audioLabel = preg_replace('/\b(audio|audio completo|completo|complete)\b/i', '', $audioLabel);
+                                                $audioLabel = trim(preg_replace('/\s+/', ' ', $audioLabel));
+                                                if (!$audioLabel) {
+                                                    $audioLabel = 'Áudio ' . ($idx + 1);
+                                                }
+                                            @endphp
+                                            <a href="{{ $audioItemUrl }}" target="_blank" rel="noopener"
+                                               class="w-full block px-3 py-2 bg-indigo-500 text-white rounded font-medium text-center text-xs min-h-9 flex items-center justify-center hover:bg-indigo-600 active:bg-indigo-700 transition truncate">
+                                                🔊 {{ $audioLabel }}
+                                            </a>
+                                        @endforeach
+                                    </div>
+                                @endif
                             @endif
                             
                             @if($lesson->content_type !== 'video')
@@ -170,13 +191,53 @@
 
                     @case('pdf')
                         @if($pdfUrl)
-                            <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
-                                <div id="pdf-scroll" class="overflow-y-auto" style="height: 70vh; max-height: calc(100vh - 150px);">
-                                    <div id="pdf-viewer" data-pdf-url="{{ $pdfUrl }}" class="p-4 space-y-4"></div>
+                            <!-- Layout: Áudio em cima (se existir) + PDF abaixo em desktop, stacked em mobile -->
+                            <div>
+                                <!-- Áudio Player (se houver) -->
+                                @if($audioUrl || !empty($audioList))
+                                    <div class="mb-4">
+                                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">🔊 Áudio da Aula</h4>
+                                        @if(!empty($audioList))
+                                            <div class="space-y-3">
+                                                @foreach($audioList as $audioItem)
+                                                    @php
+                                                        $audioItemUrl = asset('storage/' . ltrim($audioItem, '/'));
+                                                        $audioLabel = pathinfo($audioItem, PATHINFO_FILENAME);
+                                                        $audioLabel = preg_replace('/\b(audio|audio completo|completo|complete)\b/i', '', $audioLabel);
+                                                        $audioLabel = trim(preg_replace('/\s+/', ' ', $audioLabel));
+                                                    @endphp
+                                                    <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-600">
+                                                        @if($audioLabel)
+                                                            <p class="text-xs text-gray-600 dark:text-gray-300 mb-2 font-medium">{{ $audioLabel }}</p>
+                                                        @endif
+                                                        <audio controls class="w-full lesson-audio">
+                                                            <source src="{{ $audioItemUrl }}" type="audio/mpeg"/>
+                                                            Seu navegador não suporta áudio HTML5.
+                                                        </audio>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                        @elseif($audioUrl)
+                                            <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-700 dark:to-gray-600">
+                                                <audio controls class="w-full lesson-audio">
+                                                    <source src="{{ $audioUrl }}" type="audio/mpeg"/>
+                                                    Seu navegador não suporta áudio HTML5.
+                                                </audio>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+
+                                <!-- PDF Viewer -->
+                                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">📄 Leitura</h4>
+                                <div class="rounded-lg overflow-hidden border border-gray-300 dark:border-gray-600">
+                                    <div id="pdf-scroll" class="overflow-y-auto" style="height: 70vh; max-height: calc(100vh - 150px);">
+                                        <div id="pdf-viewer" data-pdf-url="{{ $pdfUrl }}" class="p-4 space-y-4"></div>
+                                    </div>
+                                    <noscript>
+                                        <iframe src="{{ $pdfUrl }}" class="w-full" style="height: 500px; min-height: 60vh; max-height: calc(100vh - 150px);"></iframe>
+                                    </noscript>
                                 </div>
-                                <noscript>
-                                    <iframe src="{{ $pdfUrl }}" class="w-full" style="height: 500px; min-height: 60vh; max-height: calc(100vh - 150px);"></iframe>
-                                </noscript>
                             </div>
                         @else
                             <div class="p-6 sm:p-8 text-center text-gray-500 rounded-lg bg-gray-100 dark:bg-gray-700">
