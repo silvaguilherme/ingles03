@@ -45,3 +45,34 @@
         @apply bg-gradient-to-r from-alura-accent to-blue-500;
     }
 }
+
+/* Force form inputs to use blue background */
+@layer utilities {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="url"],
+    input[type="date"],
+    input[type="datetime-local"],
+    input[type="month"],
+    input[type="search"],
+    input[type="tel"],
+    input[type="time"],
+    input[type="week"],
+    textarea,
+    select {
+        background-color: #1a8eff !important;
+        color: white !important;
+    }
+    
+    input::placeholder,
+    textarea::placeholder {
+        color: rgb(229, 231, 235) !important;
+    }
+    
+    select option {
+        background-color: #1a8eff;
+        color: white;
+    }
+}
