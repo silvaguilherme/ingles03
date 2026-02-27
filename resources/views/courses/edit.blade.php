@@ -19,7 +19,7 @@
                                 Título do Curso
                             </label>
                             <input type="text" name="title" id="title" 
-                                   class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400 @error('title') border-red-500 @enderror"
+                                   class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-[#1a8eff] text-white placeholder-gray-200 @error('title') border-red-500 @enderror"
                                    value="{{ $course->title }}" required>
                             @error('title')
                                 <span class="text-red-600 text-sm">{{ $message }}</span>
@@ -31,7 +31,7 @@
                                 Descrição
                             </label>
                             <textarea name="description" id="description" rows="5"
-                                      class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 text-black placeholder-gray-400">{{ $course->description }}</textarea>
+                                      class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-[#1a8eff] text-white placeholder-gray-200">{{ $course->description }}</textarea>
                             @error('description')
                                 <span class="text-red-600 text-sm">{{ $message }}</span>
                             @enderror

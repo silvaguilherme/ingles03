@@ -23,7 +23,7 @@
                                     Título
                                 </label>
                                 <input type="text" name="title" id="title" 
-                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('title') border-red-500 @enderror"
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('title') border-red-500 @enderror"
                                        value="{{ isset($lesson) ? $lesson->title : old('title') }}" required placeholder="Ex: Introdução ao Inglês">
                                 @error('title')
                                     <span class="text-red-600 text-xs sm:text-sm mt-1 block">{{ $message }}</span>
@@ -35,7 +35,7 @@
                                     Sub-título (opcional)
                                 </label>
                                 <input type="text" name="sub_title" id="sub_title" 
-                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10"
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10"
                                        value="{{ isset($lesson) ? $lesson->sub_title : old('sub_title') }}" placeholder="Ex: Pronúncia básica">
                             </div>
 
@@ -44,7 +44,7 @@
                                     Tipo de Conteúdo
                                 </label>
                                 <select name="content_type" id="content_type" 
-                                        class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('content_type') border-red-500 @enderror"
+                                        class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('content_type') border-red-500 @enderror"
                                         required>
                                     <option value="">-- Selecione --</option>
                                     <option value="video" {{ (isset($lesson) ? $lesson->content_type : old('content_type')) === 'video' ? 'selected' : '' }}>🎥 Vídeo</option>
@@ -63,7 +63,7 @@
                                     Ordem
                                 </label>
                                 <input type="number" name="order" id="order" min="1"
-                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('order') border-red-500 @enderror"
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('order') border-red-500 @enderror"
                                        value="{{ isset($lesson) ? $lesson->order : old('order', $subModule->lessons()->count() + 1) }}" required>
                                 @error('order')
                                     <span class="text-red-600 text-xs sm:text-sm mt-1 block">{{ $message }}</span>
@@ -75,7 +75,7 @@
                                     Chave do Vídeo
                                 </label>
                                 <input type="text" name="video_key" id="video_key" 
-                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10"
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10"
                                        value="{{ isset($lesson) ? $lesson->video_key : old('video_key') }}" placeholder="Ex: videos/mod1/aula1.mp4">
                             </div>
 
@@ -84,7 +84,7 @@
                                     Chave do PDF
                                 </label>
                                 <input type="text" name="pdf_key" id="pdf_key" 
-                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10"
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10"
                                        value="{{ isset($lesson) ? $lesson->pdf_key : old('pdf_key') }}" placeholder="Ex: pdfs/mod1/aula1.pdf">
                             </div>
 
@@ -93,7 +93,7 @@
                                     Chave do Áudio
                                 </label>
                                 <input type="text" name="audio_key" id="audio_key" 
-                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10"
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10"
                                        value="{{ isset($lesson) ? $lesson->audio_key : old('audio_key') }}" placeholder="Ex: audios/mod1/aula1.mp3">
                             </div>
 
@@ -102,7 +102,7 @@
                                     Duração (segundos)
                                 </label>
                                 <input type="number" name="duration_seconds" id="duration_seconds" min="0"
-                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10"
+                                       class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10"
                                        value="{{ isset($lesson) ? $lesson->duration_seconds : old('duration_seconds', 0) }}" placeholder="Ex: 300">
                             </div>
                         </div>
@@ -112,7 +112,7 @@
                                 Dados do Quiz (JSON, opcional)
                             </label>
                             <textarea name="quiz_data" id="quiz_data" rows="6"
-                                      class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                                      class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500"
                                       placeholder='{"questions":[{"question":"What is...?","options":["a","b","c"],"correct":0}]}'>{{ isset($lesson) ? $lesson->quiz_data : old('quiz_data') }}</textarea>
                         </div>
 

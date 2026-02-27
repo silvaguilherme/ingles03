@@ -21,7 +21,7 @@
                                 Título do Curso
                             </label>
                             <input type="text" name="title" id="title" 
-                                   class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('title') border-red-500 @enderror"
+                                   class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('title') border-red-500 @enderror"
                                    value="{{ $course->title ?? old('title') }}" required placeholder="Ex: Inglês Intermediário">
                             @error('title')
                                 <span class="text-red-600 text-xs sm:text-sm mt-1 block">{{ $message }}</span>
@@ -33,7 +33,7 @@
                                 Descrição
                             </label>
                             <textarea name="description" id="description" rows="5"
-                                      class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500"
+                                      class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500"
                                       placeholder="Descreva o conteúdo do curso...">{{ $course->description ?? old('description') }}</textarea>
                             @error('description')
                                 <span class="text-red-600 text-xs sm:text-sm mt-1 block">{{ $message }}</span>

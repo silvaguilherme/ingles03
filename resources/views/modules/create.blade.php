@@ -21,7 +21,7 @@
                                 Título do Módulo
                             </label>
                             <input type="text" name="title" id="title" 
-                                   class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('title') border-red-500 @enderror"
+                                   class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('title') border-red-500 @enderror"
                                    value="{{ isset($module) ? $module->title : old('title') }}" required placeholder="Ex: Módulo 1 - Iniciante">
                             @error('title')
                                 <span class="text-red-600 text-xs sm:text-sm mt-1 block">{{ $message }}</span>
@@ -33,7 +33,7 @@
                                 Ordem
                             </label>
                             <input type="number" name="order" id="order" min="1"
-                                   class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('order') border-red-500 @enderror"
+                                   class="w-full rounded-md border border-gray-300 shadow-sm px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 focus:border-blue-500 focus:ring-blue-500 min-h-10 @error('order') border-red-500 @enderror"
                                    value="{{ isset($module) ? $module->order : old('order', $course->modules()->count() + 1) }}" required>
                             @error('order')
                                 <span class="text-red-600 text-xs sm:text-sm mt-1 block">{{ $message }}</span>
