@@ -21,6 +21,50 @@ class LessonController extends Controller
 
         // Prepara lista de áudios (pode ser array vazio)
         $audioList = $lesson->audio_list ?? [];
+        
+        // Se tem PDF mas sem audio_list, tenta descobrir automaticamente
+        if ($lesson->content_type === 'pdf' && $lesson->pdf_key && empty($audioList) && !$audioUrl) {
+            $pdfPath = $lesson->pdf_key;
+            $pdfDir = dirname($pdfPath);
+            $pdfFileName = basename($pdfPath);
+            
+            // Se o PDF começa com "PDF " (case-insensitive), procura por "AUDIO " com o resto do nome
+            if (preg_match('/^PDF\s+(.+)\.pdf$/i', $pdfFileName, $matches)) {
+                $baseName = $matches[1]; // Ex: "Jack Hannaford 001"
+                
+                // Se o PDF está em pasta "pdf", o áudio está na pasta irmã "audio"
+                // Ex: videos/ingles/01-fundacao/01/pdf -> videos/ingles/01-fundacao/01/audio
+                $parentDir = dirname($pdfDir);
+                $currentFolder = basename($pdfDir);
+                
+                // Se está em pasta "pdf" ou "pdfs", procura na pasta irmã "audio"
+                if (strtolower($currentFolder) === 'pdf' || strtolower($currentFolder) === 'pdfs') {
+                    $audioDir = $parentDir . '/audio';
+                } else {
+                    // Caso contrário, procura em subpasta "audio" do diretório atual
+                    $audioDir = $pdfDir . '/audio';
+                }
+                
+                // Tenta diferentes extensões de áudio
+                $possibleAudios = [
+                    $audioDir . '/AUDIO ' . $baseName . '.mp3',
+                    $audioDir . '/Audio ' . $baseName . '.mp3',
+                    $audioDir . '/audio ' . $baseName . '.mp3',
+                    $audioDir . '/AUDIO ' . $baseName . '.wav',
+                    $audioDir . '/AUDIO ' . $baseName . '.m4a',
+                ];
+                
+                // Verifica quais arquivos existem no storage
+                $storagePath = storage_path('app/public');
+                foreach ($possibleAudios as $audioPath) {
+                    $fullPath = $storagePath . '/' . ltrim($audioPath, '/');
+                    if (file_exists($fullPath)) {
+                        $audioList[] = $audioPath;
+                        break; // Pega o primeiro encontrado
+                    }
+                }
+            }
+        }
 
         $progress = Progress::firstOrCreate(
             ['user_id' => Auth::id(), 'lesson_id' => $lesson->id],
