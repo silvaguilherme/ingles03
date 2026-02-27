@@ -294,13 +294,22 @@
 
         if (audioElements.length > 0) {
             const audioHandler = () => {
-                const percents = Array.from(audioElements).map((audio) => {
-                    const duration = audio.duration || 1;
+                // Calcula o tempo total de todos os áudios e o tempo já ouvido
+                let totalDuration = 0;
+                let totalCurrent = 0;
+                
+                Array.from(audioElements).forEach((audio) => {
+                    const duration = audio.duration || 0;
                     const current = audio.currentTime || 0;
-                    return Math.round((current / duration) * 100);
+                    totalDuration += duration;
+                    totalCurrent += current;
                 });
-                const maxPercent = Math.max(0, ...percents);
-                sendProgress(maxPercent, 100, maxPercent >= 95);
+
+                // Evita divisão por zero
+                const safeDuration = totalDuration > 0 ? totalDuration : 1;
+                const completed = totalCurrent > 0 && (totalCurrent / safeDuration) >= 0.95;
+                
+                sendProgress(totalCurrent, safeDuration, completed);
             };
 
             audioElements.forEach((audio) => {
