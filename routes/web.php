@@ -68,6 +68,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/anki', [AnkiController::class, 'index'])->name('anki.index');
     Route::get('/anki/import', [AnkiImportController::class, 'index'])->name('anki.import-page');
     Route::post('/anki/import', [AnkiImportController::class, 'import'])->name('anki.import');
+    Route::post('/anki/import-pdf', [AnkiImportController::class, 'importPdf'])->name('anki.import-pdf');
+    Route::post('/anki/preview-pdf', [AnkiImportController::class, 'previewPdf'])->name('anki.preview-pdf');
     Route::get('/anki/debug/status', [AnkiDebugController::class, 'status'])->name('anki.status');
     Route::post('/anki/debug/reassociate', [AnkiDebugController::class, 'reassociate'])->name('anki.reassociate');
     Route::get('/anki/{deck}/study', [AnkiController::class, 'study'])->name('anki.study');
