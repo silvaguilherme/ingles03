@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AnkiDeck;
 use App\Models\AnkiCard;
-use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 use PDO;
 
@@ -125,7 +124,8 @@ class AnkiImportService
                 if (count($fields) >= 2) {
                     $front = $fields[0] ?? '';
                     $back = $fields[1] ?? '';
-                    $extra = isset($fields[2]) ? $fields[2] : null;
+                    $extraFields = array_slice($fields, 2);
+                    $extra = null;
 
                     // Ignorar mensagens de erro do Anki
                     $frontText = trim(strip_tags($front));
@@ -145,8 +145,21 @@ class AnkiImportService
                     // Processar conteudo HTML/midia
                     $front = $this->processCardContent($front, $mediaFiles, $deck->id);
                     $back = $this->processCardContent($back, $mediaFiles, $deck->id);
-                    if ($extra) {
-                        $extra = $this->processCardContent($extra, $mediaFiles, $deck->id);
+
+                    if (!empty($extraFields)) {
+                        $processedExtra = [];
+                        foreach ($extraFields as $fieldValue) {
+                            $fieldValue = trim((string) $fieldValue);
+                            if ($fieldValue === '') {
+                                continue;
+                            }
+
+                            $processedExtra[] = $this->processCardContent($fieldValue, $mediaFiles, $deck->id);
+                        }
+
+                        if (!empty($processedExtra)) {
+                            $extra = implode('<hr class="my-3" />', $processedExtra);
+                        }
                     }
 
                     AnkiCard::create([
@@ -188,8 +201,9 @@ class AnkiImportService
         $content = preg_replace_callback(
             '/\[sound:([^\]]+)\]/',
             function ($matches) use ($deckId) {
-                $filename = $matches[1];
-                return '<audio controls class="w-full max-w-xs my-2"><source src="/storage/anki-media/' . $deckId . '/' . $filename . '" type="audio/mpeg">Seu navegador não suporta áudio.</audio>';
+                $filename = $this->normalizeMediaFilename($matches[1]);
+                $mediaUrl = '/storage/anki-media/' . $deckId . '/' . rawurlencode($filename);
+                return '<audio controls class="w-full max-w-xs my-2"><source src="' . $mediaUrl . '">Seu navegador não suporta áudio.</audio>';
             },
             $content
         );
@@ -198,9 +212,9 @@ class AnkiImportService
         $content = preg_replace_callback(
             '/src="([^"]+)"/',
             function ($matches) use ($deckId) {
-                $filename = $matches[1];
+                $filename = $this->normalizeMediaFilename($matches[1]);
                 if (file_exists(storage_path('app/anki-media/' . $deckId . '/' . $filename))) {
-                    return 'src="/storage/anki-media/' . $deckId . '/' . $filename . '"';
+                    return 'src="/storage/anki-media/' . $deckId . '/' . rawurlencode($filename) . '"';
                 }
                 return $matches[0];
             },
@@ -208,6 +222,16 @@ class AnkiImportService
         );
 
         return $content;
+    }
+
+    /**
+     * Normalizar nome de arquivo de mídia vindo do APKG/HTML
+     */
+    private function normalizeMediaFilename($filename)
+    {
+        $decoded = html_entity_decode((string) $filename, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $decoded = urldecode($decoded);
+        return basename(trim($decoded));
     }
 
     /**
@@ -224,7 +248,7 @@ class AnkiImportService
                 continue;
             }
 
-            $safeName = basename($filename);
+            $safeName = $this->normalizeMediaFilename($filename);
             $source = $tempDir . DIRECTORY_SEPARATOR . $index;
             $destination = $mediaDir . DIRECTORY_SEPARATOR . $safeName;
 
