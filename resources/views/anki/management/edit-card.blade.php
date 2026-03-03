@@ -102,49 +102,66 @@
             document.getElementById('previewBack').textContent = e.target.value;
         });
 
+        async function readJsonSafe(response) {
+            const text = await response.text();
+
+            try {
+                return JSON.parse(text);
+            } catch (_) {
+                throw new Error(`Resposta inválida do servidor (HTTP ${response.status}).`);
+            }
+        }
+
         // Salvar card
-        document.getElementById('editCardForm').addEventListener('submit', (e) => {
+        document.getElementById('editCardForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const form = new FormData();
-            form.append('front', document.getElementById('front').value);
-            form.append('back', document.getElementById('back').value);
-            form.append('audio_url', document.getElementById('audio_url').value);
+            try {
+                const response = await fetch(`/anki/management/cards/{{ $card->id }}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                    },
+                    body: JSON.stringify({
+                        front: document.getElementById('front').value,
+                        back: document.getElementById('back').value,
+                        audio_url: document.getElementById('audio_url').value,
+                    })
+                });
 
-            fetch(`/anki/management/cards/{{ $card->id }}`, {
-                method: 'PATCH',
-                headers: {
-                    'X-CSRF-Token': document.querySelector('input[name="_token"]').value,
-                },
-                body: form
-            })
-            .then(res => res.json())
-            .then(data => {
+                const data = await readJsonSafe(response);
+
                 if (data.success) {
                     alert(data.message);
                     history.back();
                 } else {
-                    alert('Erro: ' + data.message);
+                    alert('Erro: ' + (data.message || 'Falha ao salvar card'));
                 }
-            })
-            .catch(err => alert('Erro: ' + err));
+            } catch (err) {
+                alert('Erro: ' + err.message);
+            }
         });
 
         // Deletar card
-        function deleteCard() {
+        async function deleteCard() {
             if (confirm('Deseja deletar este card permanentemente?')) {
-                fetch(`/anki/management/cards/{{ $card->id }}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-Token': document.querySelector('input[name="_token"]').value,
-                    },
-                })
-                .then(res => res.json())
-                .then(data => {
+                try {
+                    const response = await fetch(`/anki/management/cards/{{ $card->id }}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value,
+                        },
+                    });
+
+                    const data = await readJsonSafe(response);
                     alert(data.message);
                     history.back();
-                })
-                .catch(err => alert('Erro: ' + err));
+                } catch (err) {
+                    alert('Erro: ' + err.message);
+                }
             }
         }
     </script>
