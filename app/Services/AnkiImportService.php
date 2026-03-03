@@ -58,7 +58,7 @@ class AnkiImportService
         }
 
         // Extrair arquivos de mídia
-        $mediaDir = storage_path('app/anki-media/' . $deck->id);
+        $mediaDir = storage_path('app/public/anki-media/' . $deck->id);
         if (!is_dir($mediaDir)) {
             mkdir($mediaDir, 0755, true);
         }
@@ -213,7 +213,7 @@ class AnkiImportService
             '/src="([^"]+)"/',
             function ($matches) use ($deckId) {
                 $filename = $this->normalizeMediaFilename($matches[1]);
-                if (file_exists(storage_path('app/anki-media/' . $deckId . '/' . $filename))) {
+                if (file_exists(storage_path('app/public/anki-media/' . $deckId . '/' . $filename))) {
                     return 'src="/storage/anki-media/' . $deckId . '/' . rawurlencode($filename) . '"';
                 }
                 return $matches[0];

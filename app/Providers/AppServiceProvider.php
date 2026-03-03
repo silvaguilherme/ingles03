@@ -38,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
                 \App\Console\Commands\ImportPdfsFromStructure::class,
                 \App\Console\Commands\ReorganizeAudios::class,
                 \App\Console\Commands\ImportAudiosFromStructure::class,
+                \App\Console\Commands\FixAnkiMediaPublicPath::class,
             ]);
         }
     }
