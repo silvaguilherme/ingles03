@@ -5,14 +5,15 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use App\Services\PdfAnkiImportService;
+use App\Services\CsvAnkiImportService;
 
 class AnkiImportController extends Controller
 {
-    protected $pdfService;
+    protected $csvService;
 
-    public function __construct(PdfAnkiImportService $pdfService)
+    public function __construct(CsvAnkiImportService $csvService)
     {
-        $this->pdfService = $pdfService;
+        $this->csvService = $csvService;
     }
 
     /**
@@ -54,23 +55,21 @@ class AnkiImportController extends Controller
     }
 
     /**
-     * Importar PDF e criar cards Anki
+     * Importar CSV e criar cards Anki
      */
-    public function importPdf(Request $request)
+    public function importCsv(Request $request)
     {
         $request->validate([
-            'path' => 'required|string|ends_with:.pdf',
+            'path' => 'required|string|ends_with:.csv',
             'submodule_id' => 'required|integer|exists:sub_modules,id',
             'deck_name' => 'nullable|string|max:255',
-            'audio_path' => 'nullable|string',
         ]);
 
         try {
-            $result = $this->pdfService->importFromPdf(
+            $result = $this->csvService->importFromCsv(
                 $request->input('path'),
                 $request->input('submodule_id'),
-                $request->input('deck_name'),
-                $request->input('audio_path')
+                $request->input('deck_name')
             );
 
             return response()->json([
@@ -81,27 +80,27 @@ class AnkiImportController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao importar PDF: ' . $e->getMessage(),
+                'message' => 'Erro ao importar CSV: ' . $e->getMessage(),
             ], 400);
         }
     }
 
     /**
-     * Preview de um PDF antes de importar
+     * Preview de um CSV antes de importar
      */
-    public function previewPdf(Request $request)
+    public function previewCsv(Request $request)
     {
         $request->validate([
-            'path' => 'required|string|ends_with:.pdf',
+            'path' => 'required|string|ends_with:.csv',
         ]);
 
         try {
-            $info = $this->pdfService->getPdfInfo($request->input('path'));
+            $info = $this->csvService->getCsvInfo($request->input('path'));
 
             if (!$info) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Não foi possível processar o PDF',
+                    'message' => 'Não foi possível processar o CSV',
                 ], 400);
             }
 
@@ -112,8 +111,9 @@ class AnkiImportController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao processar PDF: ' . $e->getMessage(),
+                'message' => 'Erro ao processar CSV: ' . $e->getMessage(),
             ], 400);
         }
     }
 }
+
