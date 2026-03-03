@@ -47,15 +47,15 @@
 
                     <!-- Field Audio -->
                     <div>
-                        <label for="audio_path" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        <label for="audio_url" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
                             🎵 Áudio (Opcional)
                         </label>
-                        <input type="text" id="audio_path" name="audio_path" 
-                               placeholder="Ex: audio/lesson1/card1.mp3"
-                               value="{{ $card->audio_path ?? '' }}"
+                        <input type="text" id="audio_url" name="audio_url" 
+                               placeholder="Ex: /storage/anki-media/30/audio.mp3"
+                               value="{{ $audioUrl ?? '' }}"
                                class="w-full px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            Deixe em branco para remover o áudio
+                            Deixe em branco para remover o áudio manual deste card
                         </p>
                     </div>
 
@@ -109,7 +109,7 @@
             const form = new FormData();
             form.append('front', document.getElementById('front').value);
             form.append('back', document.getElementById('back').value);
-            form.append('audio_path', document.getElementById('audio_path').value);
+            form.append('audio_url', document.getElementById('audio_url').value);
 
             fetch(`/anki/management/cards/{{ $card->id }}`, {
                 method: 'PATCH',

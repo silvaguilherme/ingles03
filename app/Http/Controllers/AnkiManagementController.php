@@ -8,6 +8,16 @@ use Illuminate\Http\Request;
 
 class AnkiManagementController extends Controller
 {
+    private const ANKI_ERROR_PHRASES = [
+        'This file requires',
+        'newer version',
+        'upgrade Anki',
+        'Please update',
+        'latest anki',
+        'import the .apkg file again',
+        'not supported',
+    ];
+
     /**
      * Listar todos os decks com options para gerenciar
      */
@@ -23,10 +33,20 @@ class AnkiManagementController extends Controller
     /**
      * Editar um deck
      */
-    public function editDeck(AnkiDeck $deck)
+    public function editDeck(Request $request, AnkiDeck $deck)
     {
-        $cards = $deck->cards()->paginate(20);
-        return view('anki.management.edit-deck', compact('deck', 'cards'));
+        $cardsQuery = $deck->cards();
+        $withoutAudioOnly = $request->boolean('without_audio');
+
+        if ($withoutAudioOnly) {
+            $cardsQuery->whereRaw("LOWER(COALESCE(front, '')) NOT LIKE ?", ['%<audio%'])
+                ->whereRaw("LOWER(COALESCE(back, '')) NOT LIKE ?", ['%<audio%'])
+                ->whereRaw("LOWER(COALESCE(extra, '')) NOT LIKE ?", ['%<audio%']);
+        }
+
+        $cards = $cardsQuery->paginate(20)->withQueryString();
+
+        return view('anki.management.edit-deck', compact('deck', 'cards', 'withoutAudioOnly'));
     }
 
     /**
@@ -70,20 +90,25 @@ class AnkiManagementController extends Controller
     public function editCard(Request $request, AnkiCard $card)
     {
         if ($request->method() === 'GET') {
-            return view('anki.management.edit-card', compact('card'));
+            $audioUrl = $this->extractFirstAudioUrl($card);
+            return view('anki.management.edit-card', compact('card', 'audioUrl'));
         }
 
         // POST - Atualizar card
         $request->validate([
             'front' => 'required|string',
             'back' => 'required|string',
-            'audio_path' => 'nullable|string',
+            'audio_url' => 'nullable|string|max:2048',
         ]);
+
+        $audioUrl = trim((string) $request->input('audio_url', ''));
+        $audioUrl = $audioUrl !== '' ? $audioUrl : null;
+        $extra = $this->upsertManagedAudioBlock($card->extra, $audioUrl);
 
         $card->update([
             'front' => $request->input('front'),
             'back' => $request->input('back'),
-            'audio_path' => $request->input('audio_path'),
+            'extra' => $extra,
         ]);
 
         return response()->json([
@@ -105,6 +130,44 @@ class AnkiManagementController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Card removido do deck '$deckName'",
+        ]);
+    }
+
+    /**
+     * Remover cards com mensagens de erro do Anki em um deck
+     */
+    public function cleanErrorCards(AnkiDeck $deck)
+    {
+        $cards = $deck->cards()->get(['id', 'front', 'back']);
+        $idsToDelete = [];
+
+        foreach ($cards as $card) {
+            $frontText = trim(strip_tags((string) $card->front));
+            $backText = trim(strip_tags((string) $card->back));
+
+            foreach (self::ANKI_ERROR_PHRASES as $phrase) {
+                if (stripos($frontText, $phrase) !== false || stripos($backText, $phrase) !== false) {
+                    $idsToDelete[] = $card->id;
+                    break;
+                }
+            }
+        }
+
+        $deleted = 0;
+        if (!empty($idsToDelete)) {
+            $deleted = AnkiCard::whereIn('id', $idsToDelete)->delete();
+        }
+
+        $deck->update([
+            'total_cards' => $deck->cards()->count(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $deleted > 0
+                ? "Limpeza concluída: {$deleted} card(s) de erro removido(s)."
+                : 'Nenhum card de erro encontrado neste baralho.',
+            'deleted' => $deleted,
         ]);
     }
 
@@ -172,5 +235,48 @@ class AnkiManagementController extends Controller
                 'deck' => $card->deck->name,
             ]),
         ]);
+    }
+
+    private function extractFirstAudioUrl(AnkiCard $card): ?string
+    {
+        $content = implode("\n", [
+            (string) $card->front,
+            (string) $card->back,
+            (string) $card->extra,
+        ]);
+
+        if (preg_match('/<source[^>]*src=["\']([^"\']+)["\']/i', $content, $matches)) {
+            return $matches[1] ?? null;
+        }
+
+        if (preg_match('/<audio[^>]*src=["\']([^"\']+)["\']/i', $content, $matches)) {
+            return $matches[1] ?? null;
+        }
+
+        return null;
+    }
+
+    private function upsertManagedAudioBlock(?string $extra, ?string $audioUrl): ?string
+    {
+        $normalizedExtra = (string) ($extra ?? '');
+        $normalizedExtra = preg_replace(
+            '/<div class="manual-audio" data-manual-audio="1">.*?<\/div>/is',
+            '',
+            $normalizedExtra
+        ) ?? '';
+        $normalizedExtra = trim($normalizedExtra);
+
+        if ($audioUrl === null) {
+            return $normalizedExtra !== '' ? $normalizedExtra : null;
+        }
+
+        $safeUrl = htmlspecialchars($audioUrl, ENT_QUOTES, 'UTF-8');
+        $audioBlock = '<div class="manual-audio" data-manual-audio="1"><audio controls preload="none"><source src="' . $safeUrl . '"></audio></div>';
+
+        if ($normalizedExtra === '') {
+            return $audioBlock;
+        }
+
+        return $normalizedExtra . '<hr class="my-3" />' . $audioBlock;
     }
 }

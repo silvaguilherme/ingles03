@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/anki/management/decks/{deck}/edit', [AnkiManagementController::class, 'editDeck'])->name('anki.management.edit-deck');
     Route::patch('/anki/management/decks/{deck}', [AnkiManagementController::class, 'updateDeck'])->name('anki.management.update-deck');
     Route::delete('/anki/management/decks/{deck}', [AnkiManagementController::class, 'deleteDeck'])->name('anki.management.delete-deck');
+    Route::post('/anki/management/decks/{deck}/clean-errors', [AnkiManagementController::class, 'cleanErrorCards'])->name('anki.management.clean-errors');
     Route::get('/anki/management/cards/{card}/edit', [AnkiManagementController::class, 'editCard'])->name('anki.management.edit-card');
     Route::patch('/anki/management/cards/{card}', [AnkiManagementController::class, 'editCard'])->name('anki.management.update-card');
     Route::delete('/anki/management/cards/{card}', [AnkiManagementController::class, 'deleteCard'])->name('anki.management.delete-card');

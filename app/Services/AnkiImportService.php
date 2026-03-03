@@ -129,9 +129,28 @@ class AnkiImportService
 
                     // Ignorar mensagens de erro do Anki
                     $frontText = trim(strip_tags($front));
-                    if (stripos($frontText, 'This file requires') !== false || 
-                        stripos($frontText, 'newer version') !== false ||
-                        stripos($frontText, 'upgrade Anki') !== false) {
+                    $backText = trim(strip_tags($back));
+                    
+                    // Lista de frases que indicam mensagem de erro do Anki
+                    $errorPhrases = [
+                        'This file requires',
+                        'newer version',
+                        'upgrade Anki',
+                        'Please update',
+                        'latest anki',
+                        'import the .apkg file again',
+                        'not supported',
+                    ];
+                    
+                    $isErrorMessage = false;
+                    foreach ($errorPhrases as $phrase) {
+                        if (stripos($frontText, $phrase) !== false || stripos($backText, $phrase) !== false) {
+                            $isErrorMessage = true;
+                            break;
+                        }
+                    }
+                    
+                    if ($isErrorMessage) {
                         \Log::warning("Ignorando mensagem de erro do Anki: {$frontText}");
                         continue;
                     }

@@ -48,14 +48,33 @@
                     <button onclick="updateDeck()" class="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">
                         💾 Salvar Alterações
                     </button>
+
+                    <button onclick="cleanErrorCards()" class="w-full px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg">
+                        🧹 Limpar cards com erro do Anki
+                    </button>
                 </div>
             </div>
 
             <!-- Lista de Cards -->
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">
-                    🎴 Cards ({{ $cards->total() }})
-                </h3>
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                    <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100">
+                        🎴 Cards ({{ $cards->total() }})
+                    </h3>
+
+                    <form method="GET" action="{{ route('anki.management.edit-deck', $deck) }}" class="inline-flex items-center gap-2">
+                        <label for="without_audio" class="text-sm font-semibold text-gray-700 dark:text-gray-300">Somente sem áudio</label>
+                        <input
+                            id="without_audio"
+                            type="checkbox"
+                            name="without_audio"
+                            value="1"
+                            {{ ($withoutAudioOnly ?? false) ? 'checked' : '' }}
+                            onchange="this.form.submit()"
+                            class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        >
+                    </form>
+                </div>
 
                 <div class="space-y-4 max-h-96 overflow-y-auto">
                     @forelse($cards as $card)
@@ -68,9 +87,14 @@
                                     <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
                                         Back: {{ substr($card->back, 0, 100) }}{{ strlen($card->back) > 100 ? '...' : '' }}
                                     </div>
-                                    @if($card->audio_path)
+                                    @php
+                                        $hasAudio = str_contains(strtolower((string) $card->front), '<audio')
+                                            || str_contains(strtolower((string) $card->back), '<audio')
+                                            || str_contains(strtolower((string) ($card->extra ?? '')), '<audio');
+                                    @endphp
+                                    @if($hasAudio)
                                         <div class="text-xs text-green-600 dark:text-green-400">
-                                            🎵 {{ basename($card->audio_path) }}
+                                            🎵 Com áudio
                                         </div>
                                     @else
                                         <div class="text-xs text-gray-500">🔇 Sem áudio</div>
@@ -145,6 +169,25 @@
                 })
                 .catch(err => alert('Erro: ' + err));
             }
+        }
+
+        function cleanErrorCards() {
+            if (!confirm('Deseja remover cards com mensagens de erro do Anki deste baralho?')) {
+                return;
+            }
+
+            fetch(`/anki/management/decks/{{ $deck->id }}/clean-errors`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-Token': document.querySelector('input[name="_token"]').value,
+                },
+            })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message || 'Limpeza concluída');
+                location.reload();
+            })
+            .catch(err => alert('Erro: ' + err));
         }
     </script>
 </x-app-layout>
