@@ -29,10 +29,16 @@
                 </div>
 
                 <!-- Import Button -->
-                <button id="importAllBtn" 
-                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg mb-8">
-                    🚀 Iniciar Importação Completa
-                </button>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <button id="importAllBtn" 
+                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg">
+                        🚀 Importar TUDO
+                    </button>
+                    <button id="importAnkiBtn" 
+                            class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors text-lg">
+                        🎴 Importar Apenas Anki
+                    </button>
+                </div>
 
                 <!-- Loading -->
                 <div id="loadingContainer" class="hidden text-center mb-8">
@@ -170,5 +176,49 @@
                 outputEl.classList.remove('hidden');
             }
         }
+
+        // Importar apenas Anki
+        document.getElementById('importAnkiBtn').addEventListener('click', async () => {
+            const btn = document.getElementById('importAnkiBtn');
+            const loadingContainer = document.getElementById('loadingContainer');
+            const resultsContainer = document.getElementById('resultsContainer');
+
+            btn.disabled = true;
+            btn.textContent = '⏳ Processando...';
+            loadingContainer.classList.remove('hidden');
+            resultsContainer.classList.remove('hidden');
+
+            try {
+                const response = await fetch('{{ route("import-all.execute-anki") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': document.querySelector('input[name="_token"]').value,
+                    },
+                });
+
+                const data = await response.json();
+                loadingContainer.classList.add('hidden');
+
+                // Limpar resultados anteriores
+                document.getElementById('videosCard').classList.add('hidden');
+                document.getElementById('pdfsCard').classList.add('hidden');
+                document.getElementById('audiosCard').classList.add('hidden');
+
+                // Atualizar apenas resultado de Anki
+                updateResult('anki', data.data.anki);
+
+                // Mostrar summary
+                if (data.success) {
+                    document.getElementById('summaryContainer').classList.remove('hidden');
+                    document.getElementById('summaryText').textContent = 'Baralhos Anki importados com sucesso! (sem duplicatas)';
+                }
+            } catch (error) {
+                loadingContainer.classList.add('hidden');
+                alert('Erro ao importar Anki: ' + error.message);
+                btn.disabled = false;
+                btn.textContent = '🎴 Importar Apenas Anki';
+            }
+        });
     </script>
 </x-app-layout>

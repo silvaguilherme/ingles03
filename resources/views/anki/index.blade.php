@@ -4,9 +4,14 @@
             <h2 class="font-semibold text-sm text-alura-text leading-tight">
                 🎴 Dashboard Anki
             </h2>
-            <a href="{{ route('anki.status') }}" class="text-xs text-alura-accent hover:text-alura-accent-hover underline">
-                🔧 Debug
-            </a>
+            <div class="flex gap-3">
+                <a href="{{ route('anki.management.decks') }}" class="text-xs text-alura-accent hover:text-alura-accent-hover underline">
+                    ⚙️ Gerenciar
+                </a>
+                <a href="{{ route('anki.status') }}" class="text-xs text-alura-accent hover:text-alura-accent-hover underline">
+                    🔧 Debug
+                </a>
+            </div>
         </div>
     </x-slot>
 

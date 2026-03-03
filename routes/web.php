@@ -15,6 +15,7 @@ use App\Http\Controllers\AnkiImportController;
 use App\Http\Controllers\AnkiDebugController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\ImportAllController;
+use App\Http\Controllers\AnkiManagementController;
 
 Route::redirect('/', '/courses');
 
@@ -68,6 +69,7 @@ Route::middleware('auth')->group(function () {
     // Import All
     Route::get('/admin/import-all', [ImportAllController::class, 'index'])->name('import-all.index');
     Route::post('/admin/import-all', [ImportAllController::class, 'importAll'])->name('import-all.execute');
+    Route::post('/admin/import-all/anki', [ImportAllController::class, 'importAnkiOnly'])->name('import-all.execute-anki');
 
     // Anki
     Route::get('/anki', [AnkiController::class, 'index'])->name('anki.index');
@@ -81,10 +83,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/anki/{deck}/record-answer', [AnkiController::class, 'recordAnswer'])->name('anki.record-answer');
     Route::get('/anki/stats', [AnkiController::class, 'stats'])->name('anki.stats');
 
-    // Anki Decks
-    Route::get('/submodules/{subModule}/anki-decks/create', [AnkiDeckController::class, 'create'])->name('anki-decks.create');
-    Route::post('/submodules/{subModule}/anki-decks', [AnkiDeckController::class, 'store'])->name('anki-decks.store');
-    Route::delete('/anki-decks/{deck}', [AnkiDeckController::class, 'destroy'])->name('anki-decks.destroy');
+    // Anki Management
+    Route::get('/anki/management/decks', [AnkiManagementController::class, 'decks'])->name('anki.management.decks');
+    Route::get('/anki/management/decks/{deck}/edit', [AnkiManagementController::class, 'editDeck'])->name('anki.management.edit-deck');
+    Route::patch('/anki/management/decks/{deck}', [AnkiManagementController::class, 'updateDeck'])->name('anki.management.update-deck');
+    Route::delete('/anki/management/decks/{deck}', [AnkiManagementController::class, 'deleteDeck'])->name('anki.management.delete-deck');
+    Route::get('/anki/management/cards/{card}/edit', [AnkiManagementController::class, 'editCard'])->name('anki.management.edit-card');
+    Route::patch('/anki/management/cards/{card}', [AnkiManagementController::class, 'editCard'])->name('anki.management.update-card');
+    Route::delete('/anki/management/cards/{card}', [AnkiManagementController::class, 'deleteCard'])->name('anki.management.delete-card');
+    Route::post('/anki/management/deduplicate', [AnkiManagementController::class, 'deduplicateDecks'])->name('anki.management.deduplicate');
+    Route::get('/anki/management/search', [AnkiManagementController::class, 'searchCards'])->name('anki.management.search');
 
     // Perfil
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

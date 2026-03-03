@@ -96,7 +96,32 @@ class ImportAllController extends Controller
     }
 
     /**
-     * Importar Anki Decks
+     * Executar apenas import de Anki com deduplicação
+     */
+    public function importAnkiOnly(Request $request)
+    {
+        $results = [];
+
+        try {
+            // 1. Importar Anki Decks
+            $results['anki'] = $this->importAnkiDecks();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Import Anki concluído!',
+                'data' => $results,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao importar Anki: ' . $e->getMessage(),
+                'data' => $results,
+            ], 400);
+        }
+    }
+
+    /**
+     * Importar Anki Decks com deduplicação
      */
     private function importAnkiDecks()
     {
