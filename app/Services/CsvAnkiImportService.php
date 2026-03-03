@@ -43,16 +43,19 @@ class CsvAnkiImportService
 
         foreach ($cards as $cardData) {
             try {
-                $extra = null;
+                $front = $cardData['front'];
+                
+                // Adicionar áudio ao front se existir
                 if (!empty($cardData['audio'])) {
-                    $extra = $this->buildAudioHtml($cardData['audio']);
+                    $audioHtml = $this->buildAudioHtml($cardData['audio']);
+                    $front .= '<br>' . $audioHtml;
                 }
 
                 AnkiCard::create([
                     'anki_deck_id' => $deck->id,
-                    'front' => $cardData['front'],
+                    'front' => $front,
                     'back' => $cardData['back'],
-                    'extra' => $extra,
+                    'extra' => null,
                     'tags' => '',
                     'order' => $order++,
                 ]);
