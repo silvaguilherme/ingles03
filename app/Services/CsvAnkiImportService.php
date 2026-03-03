@@ -80,27 +80,77 @@ class CsvAnkiImportService
     /**
      * Parsear cards do CSV
      * Formato esperado: Front,Back,Audio (com suporte a delimitador ; e TAB)
+     * Suporta CSV com ou sem cabeçalho
      */
     private function parseCardsFromCsv(string $filePath): array
     {
         [$handle, $delimiter] = $this->openCsvHandle($filePath);
 
         try {
-            $header = $this->readCsvRow($handle, $delimiter);
-            if (!$header) {
+            $firstRow = $this->readCsvRow($handle, $delimiter);
+            if (!$firstRow) {
                 throw new \Exception('CSV vazio ou inválido.');
             }
 
-            $header = $this->normalizeHeader($header);
+            $firstRow = $this->normalizeHeader($firstRow);
 
-            $frontCol = $this->findColumn($header, ['front', 'pergunta', 'frente', 'question']);
-            $backCol = $this->findColumn($header, ['back', 'resposta', 'verso', 'answer']);
-            $audioCol = $this->findColumn($header, ['audio', 'áudio', 'som', 'file', 'arquivo', 'mp3']);
+            // Detectar se primeira linha é cabeçalho ou dados
+            $hasHeader = $this->detectIfHeader($firstRow);
 
-            if ($frontCol === null || $backCol === null) {
-                throw new \Exception('Colunas obrigatórias não encontradas. Use cabeçalho com Front e Back.');
+            if ($hasHeader) {
+                // Tem cabeçalho - mapear colunas
+                $frontCol = $this->findColumn($firstRow, ['front', 'pergunta', 'frente', 'question']);
+                $backCol = $this->findColumn($firstRow, ['back', 'resposta', 'verso', 'answer']);
+                $audioCol = $this->findColumn($firstRow, ['audio', 'áudio', 'som', 'file', 'arquivo', 'mp3']);
+
+                if ($frontCol === null || $backCol === null) {
+                    throw new \Exception('Colunas obrigatórias não encontradas. Use cabeçalho com Front e Back.');
+                }
+            } else {
+                // Sem cabeçalho - assumir ordem padrão: coluna 0=Front, 1=Back, 2=Audio
+                $frontCol = 0;
+                $backCol = 1;
+                $audioCol = count($firstRow) >= 3 ? 2 : null;
+
+                // Processar primeira linha como dado
+                $front = isset($firstRow[$frontCol]) ? trim((string) $firstRow[$frontCol]) : '';
+                $back = isset($firstRow[$backCol]) ? trim((string) $firstRow[$backCol]) : '';
+                $audio = ($audioCol !== null && isset($firstRow[$audioCol])) ? trim((string) $firstRow[$audioCol]) : '';
+
+                $cards = [];
+                if ($front !== '' && $back !== '') {
+                    $cards[] = [
+                        'front' => $front,
+                        'back' => $back,
+                        'audio' => $audio !== '' ? $audio : null,
+                    ];
+                }
+
+                // Continuar lendo restante do arquivo
+                while (($row = $this->readCsvRow($handle, $delimiter)) !== false) {
+                    if (empty(array_filter($row, fn ($value) => trim((string) $value) !== ''))) {
+                        continue;
+                    }
+
+                    $front = isset($row[$frontCol]) ? trim((string) $row[$frontCol]) : '';
+                    $back = isset($row[$backCol]) ? trim((string) $row[$backCol]) : '';
+                    $audio = ($audioCol !== null && isset($row[$audioCol])) ? trim((string) $row[$audioCol]) : '';
+
+                    if ($front === '' || $back === '') {
+                        continue;
+                    }
+
+                    $cards[] = [
+                        'front' => $front,
+                        'back' => $back,
+                        'audio' => $audio !== '' ? $audio : null,
+                    ];
+                }
+
+                return $cards;
             }
 
+            // Se teve cabeçalho, processar linhas normalmente
             $cards = [];
 
             while (($row = $this->readCsvRow($handle, $delimiter)) !== false) {
@@ -143,56 +193,119 @@ class CsvAnkiImportService
         [$handle, $delimiter] = $this->openCsvHandle($resolved);
 
         try {
-            $header = $this->readCsvRow($handle, $delimiter);
-            if (!$header) {
+            $firstRow = $this->readCsvRow($handle, $delimiter);
+            if (!$firstRow) {
                 throw new \Exception('CSV vazio ou inválido.');
             }
 
-            $header = $this->normalizeHeader($header);
+            $firstRow = $this->normalizeHeader($firstRow);
 
-            $frontCol = $this->findColumn($header, ['front', 'pergunta', 'frente', 'question']);
-            $backCol = $this->findColumn($header, ['back', 'resposta', 'verso', 'answer']);
-            $audioCol = $this->findColumn($header, ['audio', 'áudio', 'som', 'file', 'arquivo', 'mp3']);
+            // Detectar se primeira linha é cabeçalho ou dados
+            $hasHeader = $this->detectIfHeader($firstRow);
 
-            if ($frontCol === null || $backCol === null) {
-                throw new \Exception('Colunas obrigatórias não encontradas. Use cabeçalho com Front e Back.');
-            }
+            if ($hasHeader) {
+                // Tem cabeçalho - mapear colunas
+                $frontCol = $this->findColumn($firstRow, ['front', 'pergunta', 'frente', 'question']);
+                $backCol = $this->findColumn($firstRow, ['back', 'resposta', 'verso', 'answer']);
+                $audioCol = $this->findColumn($firstRow, ['audio', 'áudio', 'som', 'file', 'arquivo', 'mp3']);
 
-            $preview = [];
-            $totalCards = 0;
-
-            while (($row = $this->readCsvRow($handle, $delimiter)) !== false) {
-                if (empty(array_filter($row, fn ($value) => trim((string) $value) !== ''))) {
-                    continue;
+                if ($frontCol === null || $backCol === null) {
+                    throw new \Exception('Colunas obrigatórias não encontradas. Use cabeçalho com Front e Back.');
                 }
 
-                $front = isset($row[$frontCol]) ? trim((string) $row[$frontCol]) : '';
-                $back = isset($row[$backCol]) ? trim((string) $row[$backCol]) : '';
-                $audio = ($audioCol !== null && isset($row[$audioCol])) ? trim((string) $row[$audioCol]) : '';
+                $preview = [];
+                $totalCards = 0;
 
-                if ($front === '' || $back === '') {
-                    continue;
+                while (($row = $this->readCsvRow($handle, $delimiter)) !== false) {
+                    if (empty(array_filter($row, fn ($value) => trim((string) $value) !== ''))) {
+                        continue;
+                    }
+
+                    $front = isset($row[$frontCol]) ? trim((string) $row[$frontCol]) : '';
+                    $back = isset($row[$backCol]) ? trim((string) $row[$backCol]) : '';
+                    $audio = ($audioCol !== null && isset($row[$audioCol])) ? trim((string) $row[$audioCol]) : '';
+
+                    if ($front === '' || $back === '') {
+                        continue;
+                    }
+
+                    $totalCards++;
+
+                    if (count($preview) < $limit) {
+                        $preview[] = [
+                            'front' => $front,
+                            'back' => $back,
+                            'audio' => $audio !== '' ? $audio : null,
+                        ];
+                    }
                 }
 
-                $totalCards++;
+                return [
+                    'file_path' => $this->normalizeStoredPath((string) $filePath),
+                    'file_name' => basename($resolved),
+                    'file_size' => filesize($resolved),
+                    'delimiter' => $delimiter === "\t" ? 'TAB' : $delimiter,
+                    'has_header' => true,
+                    'total_cards' => $totalCards,
+                    'preview' => $preview,
+                ];
+            } else {
+                // Sem cabeçalho - assumir ordem padrão
+                $frontCol = 0;
+                $backCol = 1;
+                $audioCol = count($firstRow) >= 3 ? 2 : null;
 
-                if (count($preview) < $limit) {
+                // Processar primeira linha como dado
+                $front = isset($firstRow[$frontCol]) ? trim((string) $firstRow[$frontCol]) : '';
+                $back = isset($firstRow[$backCol]) ? trim((string) $firstRow[$backCol]) : '';
+                $audio = ($audioCol !== null && isset($firstRow[$audioCol])) ? trim((string) $firstRow[$audioCol]) : '';
+
+                $preview = [];
+                $totalCards = 0;
+
+                if ($front !== '' && $back !== '') {
+                    $totalCards++;
                     $preview[] = [
                         'front' => $front,
                         'back' => $back,
                         'audio' => $audio !== '' ? $audio : null,
                     ];
                 }
-            }
 
-            return [
-                'file_path' => $this->normalizeStoredPath((string) $filePath),
-                'file_name' => basename($resolved),
-                'file_size' => filesize($resolved),
-                'delimiter' => $delimiter === "\t" ? 'TAB' : $delimiter,
-                'total_cards' => $totalCards,
-                'preview' => $preview,
-            ];
+                while (($row = $this->readCsvRow($handle, $delimiter)) !== false) {
+                    if (empty(array_filter($row, fn ($value) => trim((string) $value) !== ''))) {
+                        continue;
+                    }
+
+                    $front = isset($row[$frontCol]) ? trim((string) $row[$frontCol]) : '';
+                    $back = isset($row[$backCol]) ? trim((string) $row[$backCol]) : '';
+                    $audio = ($audioCol !== null && isset($row[$audioCol])) ? trim((string) $row[$audioCol]) : '';
+
+                    if ($front === '' || $back === '') {
+                        continue;
+                    }
+
+                    $totalCards++;
+
+                    if (count($preview) < $limit) {
+                        $preview[] = [
+                            'front' => $front,
+                            'back' => $back,
+                            'audio' => $audio !== '' ? $audio : null,
+                        ];
+                    }
+                }
+
+                return [
+                    'file_path' => $this->normalizeStoredPath((string) $filePath),
+                    'file_name' => basename($resolved),
+                    'file_size' => filesize($resolved),
+                    'delimiter' => $delimiter === "\t" ? 'TAB' : $delimiter,
+                    'has_header' => false,
+                    'total_cards' => $totalCards,
+                    'preview' => $preview,
+                ];
+            }
         } catch (\Exception $e) {
             Log::error('Erro ao ler CSV: ' . $e->getMessage());
             throw $e;
@@ -330,5 +443,41 @@ class CsvAnkiImportService
         $safeUrl = htmlspecialchars($audio, ENT_QUOTES, 'UTF-8');
 
         return '<audio controls preload="none"><source src="' . $safeUrl . '"></audio>';
+    }
+
+    /**
+     * Detectar se primeira linha é cabeçalho ou dados
+     * Heurística: se contém palavras-chave comuns de cabeçalho, assume header
+     */
+    private function detectIfHeader(array $row): bool
+    {
+        if (count($row) < 2) {
+            return false;
+        }
+
+        $headerKeywords = [
+            'front', 'back', 'audio', 'pergunta', 'resposta', 'frente', 'verso',
+            'question', 'answer', 'som', 'file', 'arquivo', 'mp3'
+        ];
+
+        foreach ($row as $cell) {
+            $normalized = $this->normalizeWord((string) $cell);
+            if (in_array($normalized, $headerKeywords, true)) {
+                return true;
+            }
+        }
+
+        // Se a primeira célula for muito curta e genérica, provavelmente é header
+        if (count($row) >= 2) {
+            $firstCellLength = mb_strlen(trim((string) $row[0]));
+            $secondCellLength = mb_strlen(trim((string) $row[1]));
+            
+            // Ambos têm menos de 15 caracteres? Pode ser header simples
+            if ($firstCellLength < 15 && $secondCellLength < 15) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
