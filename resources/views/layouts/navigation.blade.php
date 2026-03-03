@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('anki.index')" :active="request()->routeIs('anki.*')">
                         {{ __('Anki') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('import-all.index')" :active="request()->routeIs('import-all.*')">
+                        {{ __('📥 Importação') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -75,6 +78,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('anki.index')" :active="request()->routeIs('anki.*')">
                 {{ __('Anki') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('import-all.index')" :active="request()->routeIs('import-all.*')">
+                {{ __('📥 Importação') }}
             </x-responsive-nav-link>
         </div>
 

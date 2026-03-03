@@ -14,6 +14,7 @@ use App\Http\Controllers\AnkiDeckController;
 use App\Http\Controllers\AnkiImportController;
 use App\Http\Controllers\AnkiDebugController;
 use App\Http\Controllers\TestController;
+use App\Http\Controllers\ImportAllController;
 
 Route::redirect('/', '/courses');
 
@@ -63,6 +64,10 @@ Route::middleware('auth')->group(function () {
 
     // Test
     Route::get('/test', [TestController::class, 'test'])->name('test');
+
+    // Import All
+    Route::get('/admin/import-all', [ImportAllController::class, 'index'])->name('import-all.index');
+    Route::post('/admin/import-all', [ImportAllController::class, 'importAll'])->name('import-all.execute');
 
     // Anki
     Route::get('/anki', [AnkiController::class, 'index'])->name('anki.index');
