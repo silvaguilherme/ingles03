@@ -60,7 +60,7 @@ class AnkiImportController extends Controller
     public function importCsv(Request $request)
     {
         $request->validate([
-            'path' => 'required|string|ends_with:.csv',
+            'path' => ['required', 'string', 'regex:/\.csv$/i'],
             'submodule_id' => 'required|integer|exists:sub_modules,id',
             'deck_name' => 'nullable|string|max:255',
         ]);
@@ -91,18 +91,11 @@ class AnkiImportController extends Controller
     public function previewCsv(Request $request)
     {
         $request->validate([
-            'path' => 'required|string|ends_with:.csv',
+            'path' => ['required', 'string', 'regex:/\.csv$/i'],
         ]);
 
         try {
             $info = $this->csvService->getCsvInfo($request->input('path'));
-
-            if (!$info) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Não foi possível processar o CSV',
-                ], 400);
-            }
 
             return response()->json([
                 'success' => true,
