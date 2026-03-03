@@ -107,6 +107,21 @@
                                 </p>
                             </div>
 
+                            <div>
+                                <label for="audio_path" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                                    🎵 Áudio (opcional)
+                                </label>
+                                <input type="text" 
+                                       id="audio_path" 
+                                       name="audio_path"
+                                       placeholder="Ex: audio/course1/grammar.mp3"
+                                       class="w-full px-4 py-3 bg-[#1a8eff] text-white placeholder-gray-200 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                >
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                    🔊 Se deixar em branco, procurará automaticamente em /audio/ (nome do PDF)
+                                </p>
+                            </div>
+
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label for="submodule_id" class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -311,6 +326,7 @@ Você tem que vir nos visitar.</code></pre>
             const path = document.getElementById('pdf_path').value;
             const submoduleId = document.getElementById('submodule_id').value;
             const deckName = document.getElementById('deck_name').value;
+            const audioPath = document.getElementById('audio_path').value;
 
             if (!path || !submoduleId) {
                 alert('Preencha o caminho do PDF e selecione um submodulo');
@@ -333,7 +349,7 @@ Você tem que vir nos visitar.</code></pre>
                         'Content-Type': 'application/json',
                         'X-CSRF-Token': document.querySelector('input[name="_token"]').value,
                     },
-                    body: JSON.stringify({ path, submodule_id: submoduleId, deck_name: deckName }),
+                    body: JSON.stringify({ path, submodule_id: submoduleId, deck_name: deckName, audio_path: audioPath }),
                 });
 
                 const data = await response.json();
@@ -344,6 +360,7 @@ Você tem que vir nos visitar.</code></pre>
                         <div class="text-left space-y-2">
                             <p>✓ Deck: <strong>${data.data.deck_name}</strong></p>
                             <p>✓ Cards Criados: <strong>${data.data.cards_created}</strong></p>
+                            ${data.data.audio_path ? `<p>🎵 Áudio: <strong>${data.data.audio_path}</strong></p>` : ''}
                         </div>
                     `;
                     successContainer.classList.remove('hidden');

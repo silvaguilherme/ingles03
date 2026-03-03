@@ -12,7 +12,7 @@ class PdfAnkiImportService
     /**
      * Importar cards de um arquivo PDF
      */
-    public function importFromPdf($filePath, $submoduleId, $deckName = null)
+    public function importFromPdf($filePath, $submoduleId, $deckName = null, $audioPath = null)
     {
         $fileFullPath = storage_path('app/' . $filePath);
 
@@ -34,12 +34,16 @@ class PdfAnkiImportService
             throw new \Exception('Nenhum card foi encontrado no formato Front:/Back:');
         }
 
+        // Resolver caminho do áudio
+        $resolvedAudioPath = $this->resolveAudioPath($filePath, $audioPath);
+
         // Criar ou atualizar deck
         $deck = AnkiDeck::updateOrCreate(
             ['file_path' => $filePath],
             [
                 'submodule_id' => $submoduleId,
                 'name' => $deckName ?? basename($filePath, '.pdf'),
+                'audio_path' => $resolvedAudioPath,
             ]
         );
 
@@ -54,6 +58,7 @@ class PdfAnkiImportService
                     'deck_id' => $deck->id,
                     'front' => $cardData['front'],
                     'back' => $cardData['back'],
+                    'audio_path' => $resolvedAudioPath,
                     'difficulty' => 0,
                     'ease_factor' => 2.5,
                     'interval' => 0,
@@ -70,7 +75,52 @@ class PdfAnkiImportService
             'deck_name' => $deck->name,
             'cards_created' => $createdCount,
             'total_cards' => count($cards),
+            'audio_path' => $resolvedAudioPath,
         ];
+    }
+
+    /**
+     * Resolver automaticamente o caminho do áudio
+     */
+    private function resolveAudioPath($pdfPath, $manualAudioPath = null)
+    {
+        // Se foi fornecido manualmente, usar esse
+        if (!empty($manualAudioPath)) {
+            $audioFullPath = storage_path('app/' . $manualAudioPath);
+            if (file_exists($audioFullPath)) {
+                return $manualAudioPath;
+            }
+        }
+
+        // Tentar encontrar automaticamente em /audio/
+        $pdfBaseName = basename($pdfPath, '.pdf');
+        $pdfDir = dirname($pdfPath);
+        
+        // Procurar em /audio/ na mesma pasta
+        $audioDir = dirname($pdfPath) . '/audio';
+        
+        // Tentar encontrar arquivo de áudio com mesmo nome (vários formatos)
+        $audioFormats = ['mp3', 'wav', 'ogg', 'aac', 'm4a'];
+        foreach ($audioFormats as $format) {
+            $audioPath = $audioDir . '/' . $pdfBaseName . '.' . $format;
+            $audioFullPath = storage_path('app/' . $audioPath);
+            
+            if (file_exists($audioFullPath)) {
+                return $audioPath;
+            }
+        }
+
+        // Procurar em pasta /audio/ ao lado (sibling)
+        foreach ($audioFormats as $format) {
+            $audioPath = dirname(dirname($pdfPath)) . '/audio/' . $pdfBaseName . '.' . $format;
+            $audioFullPath = storage_path('app/' . $audioPath);
+            
+            if (file_exists($audioFullPath)) {
+                return $audioPath;
+            }
+        }
+
+        return null;
     }
 
     /**

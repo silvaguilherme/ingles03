@@ -62,13 +62,15 @@ class AnkiImportController extends Controller
             'path' => 'required|string|ends_with:.pdf',
             'submodule_id' => 'required|integer|exists:sub_modules,id',
             'deck_name' => 'nullable|string|max:255',
+            'audio_path' => 'nullable|string',
         ]);
 
         try {
             $result = $this->pdfService->importFromPdf(
                 $request->input('path'),
                 $request->input('submodule_id'),
-                $request->input('deck_name')
+                $request->input('deck_name'),
+                $request->input('audio_path')
             );
 
             return response()->json([
