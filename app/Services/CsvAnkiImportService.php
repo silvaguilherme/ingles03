@@ -443,9 +443,43 @@ class CsvAnkiImportService
             $audio = trim($matches[1]);
         }
 
+        // Normalizar caminho do áudio
+        $audio = $this->normalizeAudioPath($audio);
+
         $safeUrl = htmlspecialchars($audio, ENT_QUOTES, 'UTF-8');
 
         return '<audio controls preload="none"><source src="' . $safeUrl . '"></audio>';
+    }
+
+    /**
+     * Normalizar caminho de áudio para URL pública
+     */
+    private function normalizeAudioPath(string $path): string
+    {
+        $path = str_replace('\\', '/', trim($path));
+
+        // Remover prefixos de storage e converter para /storage/
+        if (preg_match('#^(?:storage/app/public/|app/public/|public/)(.+)$#i', $path, $matches)) {
+            return '/storage/' . $matches[1];
+        }
+
+        // Se já começa com /storage/, manter
+        if (str_starts_with($path, '/storage/')) {
+            return $path;
+        }
+
+        // Se começa com /, assumir que é path absoluto válido
+        if (str_starts_with($path, '/')) {
+            return $path;
+        }
+
+        // Se começa com http/https, manter URL completa
+        if (preg_match('#^https?://#i', $path)) {
+            return $path;
+        }
+
+        // Caso contrário, assumir que está em storage/app/public e adicionar prefixo
+        return '/storage/' . ltrim($path, '/');
     }
 
     /**
